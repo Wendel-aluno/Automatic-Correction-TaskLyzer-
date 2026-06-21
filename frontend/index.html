@@ -1,0 +1,3752 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Automatic Correction - Corrija Provas com IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: #f0f7f7;
+            color: #333333;
+        }
+
+        .input-style {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            background: #e8f1f1;
+            color: #333333;
+        }
+
+        .input-style:focus {
+            border-color: #7aa2a1;
+        }
+
+        .btn-solid {
+            width: 100%;
+            padding: 14px 20px;
+            background: #7aa2a1;
+            color: white;
+            font-weight: 700;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(122, 162, 161, 0.3);
+        }
+
+        .btn-solid:hover {
+            background: #688f8e;
+            transform: scale(0.98);
+        }
+
+        .btn-solid:disabled {
+            background: #b0c4c4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            padding: 12px 24px;
+            background: #e8f1f1;
+            color: #7aa2a1;
+            font-weight: 700;
+            border-radius: 12px;
+            font-size: 13px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-secondary:hover {
+            background: #d0e1e1;
+        }
+
+        .btn-danger {
+            padding: 12px 24px;
+            background: #fee2e2;
+            color: #dc2626;
+            font-weight: 700;
+            border-radius: 12px;
+            font-size: 13px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-danger:hover {
+            background: #fecaca;
+        }
+
+        .btn-success {
+            padding: 12px 24px;
+            background: #d1fae5;
+            color: #059669;
+            font-weight: 700;
+            border-radius: 12px;
+            font-size: 13px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-success:hover {
+            background: #a7f3d0;
+        }
+
+        .btn-warning {
+            padding: 12px 24px;
+            background: #fef3c7;
+            color: #d97706;
+            font-weight: 700;
+            border-radius: 12px;
+            font-size: 13px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-warning:hover {
+            background: #fde68a;
+        }
+
+        .btn-info {
+            padding: 12px 24px;
+            background: #dbeafe;
+            color: #2563eb;
+            font-weight: 700;
+            border-radius: 12px;
+            font-size: 13px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-info:hover {
+            background: #bfdbfe;
+        }
+
+        .dark {
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .dark .bg-white {
+            background: #1e293b;
+        }
+
+        .dark .bg-gray-50 {
+            background: #1e293b;
+        }
+
+        .dark .bg-gray-100 {
+            background: #334155;
+        }
+
+        .dark .border-gray-100 {
+            border-color: #334155;
+        }
+
+        .dark .border-gray-200 {
+            border-color: #334155;
+        }
+
+        .dark .text-gray-400 {
+            color: #94a3b8;
+        }
+
+        .dark .text-gray-500 {
+            color: #94a3b8;
+        }
+
+        .dark .text-gray-600 {
+            color: #cbd5e1;
+        }
+
+        .dark .text-gray-700 {
+            color: #e2e8f0;
+        }
+
+        .dark .text-gray-800 {
+            color: #f1f5f9;
+        }
+
+        .sidebar {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+        }
+
+        .sidebar-backdrop {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+        }
+
+        .sidebar-content {
+            width: 320px;
+            height: 100%;
+            background: #f0f7f7;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            animation: slideRight 0.3s ease-out;
+            border-right: 2px solid #7aa2a1;
+        }
+
+        .dark .sidebar-content {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        @keyframes slideRight {
+            from {
+                transform: translateX(-100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%,
+            100% {
+                transform: translateY(-25%);
+            }
+            50% {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .animate-bounce {
+            animation: bounce 1s infinite;
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        .gradient-card {
+            background: linear-gradient(135deg, #7aa2a1, #4c7271);
+        }
+
+        .toast-success {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            background: #22c55e;
+            color: white;
+            font-weight: 700;
+            padding: 16px 24px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 2px solid #4ade80;
+            animation: bounce 1s infinite;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: #ef4444;
+            color: white;
+            font-weight: 900;
+            font-size: 9px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bounce 1s infinite;
+        }
+
+        .menu-item {
+            width: 100%;
+            text-align: left;
+            padding: 12px 16px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #374151;
+        }
+
+        .dark .menu-item {
+            color: #e2e8f0;
+        }
+
+        .menu-item:hover {
+            background: white;
+        }
+
+        .dark .menu-item:hover {
+            background: #334155;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            width: 100%;
+        }
+
+        @media (min-width: 640px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .dashboard-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            border-radius: 16px;
+            aspect-ratio: 1;
+            background: #7aa2a1;
+            color: white;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            text-align: center;
+        }
+
+        .dashboard-item:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 30px rgba(122, 162, 161, 0.3);
+        }
+
+        .dashboard-item:active {
+            transform: scale(0.95);
+        }
+
+        .dark .dashboard-item {
+            background: #334155;
+        }
+
+        .dark .dashboard-item:hover {
+            background: #475569;
+        }
+
+        .dashboard-item i {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .dashboard-item span {
+            font-size: 11px;
+            font-weight: 700;
+            white-space: pre-line;
+            line-height: 1.4;
+        }
+
+        .question-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+        }
+
+        @media (max-width: 640px) {
+            .question-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        .step-indicator {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        .step-indicator .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-indicator .step .circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            transition: all 0.5s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .step-indicator .step .circle.active {
+            background: #7aa2a1;
+            color: white;
+        }
+
+        .step-indicator .step .circle.inactive {
+            background: #e5e7eb;
+            color: #9ca3af;
+        }
+
+        .step-indicator .step .label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 8px;
+            position: absolute;
+            bottom: -24px;
+            width: 96px;
+            text-align: center;
+        }
+
+        .step-indicator .step .label.active {
+            color: #7aa2a1;
+        }
+
+        .step-indicator .step .label.inactive {
+            color: #9ca3af;
+        }
+
+        .step-indicator .progress-bar {
+            position: absolute;
+            top: 20px;
+            left: 15%;
+            right: 15%;
+            height: 4px;
+            background: #e5e7eb;
+            z-index: 0;
+        }
+
+        .step-indicator .progress-bar .fill {
+            height: 100%;
+            background: #7aa2a1;
+            transition: width 0.5s;
+        }
+
+        .toggle-switch {
+            width: 32px;
+            height: 16px;
+            border-radius: 9999px;
+            padding: 2px;
+            transition: background-color 0.3s;
+            cursor: pointer;
+        }
+
+        .toggle-switch.active {
+            background: #7aa2a1;
+        }
+
+        .toggle-switch.inactive {
+            background: #d1d5db;
+        }
+
+        .toggle-switch .toggle-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: white;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active .toggle-dot {
+            transform: translateX(16px);
+        }
+
+        .toggle-switch.inactive .toggle-dot {
+            transform: translateX(0);
+        }
+
+        .student-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s;
+        }
+
+        .student-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark .student-card {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .student-avatar-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #7aa2a1;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .question-item {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+
+        .question-item.correct {
+            background: #d1fae5;
+            color: #059669;
+            border: 2px solid #6ee7b7;
+        }
+
+        .question-item.wrong {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 2px solid #fca5a5;
+        }
+
+        .heatmap-item {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .heatmap-item.high {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fca5a5;
+        }
+
+        .heatmap-item.medium {
+            background: #fef3c7;
+            color: #d97706;
+            border-color: #fcd34d;
+        }
+
+        .heatmap-item.low {
+            background: #d1fae5;
+            color: #059669;
+            border-color: #6ee7b7;
+        }
+
+        .dark .heatmap-item.high {
+            background: #450a0a;
+            color: #fca5a5;
+            border-color: #7f1d1d;
+        }
+
+        .dark .heatmap-item.medium {
+            background: #451a03;
+            color: #fcd34d;
+            border-color: #78350f;
+        }
+
+        .dark .heatmap-item.low {
+            background: #064e3b;
+            color: #6ee7b7;
+            border-color: #065f46;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 13px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            background: transparent;
+            color: #6b7280;
+        }
+
+        .tab-button.active {
+            background: #7aa2a1;
+            color: white;
+        }
+
+        .tab-button:hover:not(.active) {
+            background: #e8f1f1;
+        }
+
+        .dark .tab-button {
+            color: #94a3b8;
+        }
+
+        .dark .tab-button:hover:not(.active) {
+            background: #334155;
+        }
+
+        .logo-fixed {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-fixed img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .presenca-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .presenca-badge.alta {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .presenca-badge.media {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .presenca-badge.baixa {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .dark .presenca-badge.alta {
+            background: #064e3b;
+            color: #6ee7b7;
+        }
+
+        .dark .presenca-badge.media {
+            background: #451a03;
+            color: #fcd34d;
+        }
+
+        .dark .presenca-badge.baixa {
+            background: #450a0a;
+            color: #fca5a5;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #d1d5db;
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .dark .empty-state {
+            color: #6b7280;
+        }
+
+        .dark .empty-state h3 {
+            color: #94a3b8;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-badge.otimo {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .status-badge.bom {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .status-badge.regular {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-badge.ruim {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .dark .status-badge.otimo {
+            background: #064e3b;
+            color: #6ee7b7;
+        }
+
+        .dark .status-badge.bom {
+            background: #1e3a5f;
+            color: #93c5fd;
+        }
+
+        .dark .status-badge.regular {
+            background: #451a03;
+            color: #fcd34d;
+        }
+
+        .dark .status-badge.ruim {
+            background: #450a0a;
+            color: #fca5a5;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .dark .progress-bar-container {
+            background: #334155;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.8s ease;
+        }
+
+        .progress-bar-fill.otimo {
+            background: #22c55e;
+        }
+        .progress-bar-fill.bom {
+            background: #3b82f6;
+        }
+        .progress-bar-fill.regular {
+            background: #eab308;
+        }
+        .progress-bar-fill.ruim {
+            background: #ef4444;
+        }
+
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 6px;
+        }
+
+        @media (max-width: 640px) {
+            .heatmap-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 20%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: rgba(122, 162, 161, 0.6);
+            animation: scanMove 2s ease-in-out infinite;
+        }
+
+        @keyframes scanMove {
+            0% {
+                top: 20%;
+            }
+            50% {
+                top: 80%;
+            }
+            100% {
+                top: 20%;
+            }
+        }
+
+        .scan-overlay {
+            position: absolute;
+            inset: 0;
+            border: 4px solid rgba(122, 162, 161, 0.4);
+            border-radius: 12px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script>
+        // ============================================================
+        // LOGO - IMAGEM LOCAL
+        // ============================================================
+        var LOGO_BASE64 = "LOGOAC.png";
+
+        // ============================================================
+        // ESTADO INICIAL VAZIO
+        // ============================================================
+        var DADOS_INICIAIS = {
+            classes: [],
+            notifications: []
+        };
+
+        // ============================================================
+        // NOTA MÍNIMA PARA APROVAÇÃO
+        // ============================================================
+        var NOTA_MINIMA_APROVACAO = 6.0;
+
+        // ============================================================
+        // ESTADO DA APLICAÇÃO
+        // ============================================================
+        var App = {
+            view: 'splash',
+            sidebarOpen: false,
+            theme: 'light',
+
+            classes: [],
+            selectedClass: null,
+            selectedStudent: null,
+            notifications: [],
+            showNotifications: false,
+
+            officialGabarito: null,
+            studentGabarito: null,
+            studentScan: null,
+            lastCorrectionData: null,
+            showSyncSuccess: false,
+            mensagemToast: '',
+
+            searchQuery: '',
+            activeFilter: 'todos',
+            activeSort: 'alfabetica',
+            showStatsTab: false,
+            selectedHistoricalTest: null,
+
+            profileImage: null,
+            profileName: 'Professor',
+            profileBio: 'Docente',
+            profileEmail: 'professor@escola.com',
+            aiResult: null,
+            email: 'professor@escola.com',
+            password: '123456',
+            isLoading: false,
+            isProcessing: false,
+            isConfirming: false,
+            isAnalyzing: false,
+            errorMsg: '',
+
+            // Nova Turma
+            novaTurma: {
+                nome: '',
+                nivel: 'Ensino Básico',
+                status: 'success',
+                totalAulas: 0,
+                alunos: [],
+                statistics: {
+                    averageAttendance: '0%',
+                    worstQuestion: '-',
+                    mediaTurma: 0,
+                    aprovados: 0,
+                    reprovados: 0,
+                    heatmap: { 'Interpretação': 0, 'Gramática': 0, 'Pontuação': 0, 'Ortografia': 0 }
+                }
+            },
+            isCreating: false,
+            activeTab: 'config',
+
+            // Novo Aluno
+            novoAluno: {
+                number: 1,
+                name: '',
+                gpa: 0,
+                lastGrade: 0,
+                testCount: 0,
+                successRate: 0,
+                trend: 'up',
+                faltas: 0,
+                presencas: 0,
+                history: []
+            },
+
+            // Nova Prova
+            novaProva: {
+                title: '',
+                grade: 0,
+                date: '',
+                correct: 0,
+                wrong: 0
+            },
+
+            // Registro de Falta
+            registroFalta: {
+                alunoId: '',
+                quantidade: 1,
+                data: ''
+            },
+            mostrarModalFalta: false,
+
+            // Registro de Presença
+            registroPresenca: {
+                alunoId: '',
+                quantidade: 1,
+                data: ''
+            },
+            mostrarModalPresenca: false,
+
+            // Modal Nota
+            modalNota: {
+                alunoId: '',
+                titulo: '',
+                nota: 0,
+                data: ''
+            },
+            mostrarModalNota: false,
+
+            // Scan
+            scanStep: 1,
+            currentStudentId: null,
+            scanStream: null,
+            selectedTargetClass: '',
+            selectedTargetStudent: '',
+
+            // Test Details
+            testDetails: {
+                name: 'Prova Trimestral',
+                subject: 'Matemática',
+                qCount: 20
+            },
+
+            // Discursive
+            localOfficial: null,
+            studentAnswer: null,
+
+            // User
+            user: null
+        };
+
+        // ============================================================
+        // FUNÇÕES UTILITÁRIAS
+        // ============================================================
+        function generateId() {
+            return 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function getInitials(name) {
+            if (!name) return '?';
+            var parts = name.trim().split(' ');
+            if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+            return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+        }
+
+        function getStatusClass(gpa) {
+            if (gpa >= 8.0) return 'otimo';
+            if (gpa >= 6.0) return 'bom';
+            if (gpa >= 4.0) return 'regular';
+            return 'ruim';
+        }
+
+        function getStatusIcon(gpa) {
+            if (gpa >= 8.0) return 'fa-star';
+            if (gpa >= 6.0) return 'fa-check-circle';
+            if (gpa >= 4.0) return 'fa-exclamation-triangle';
+            return 'fa-times-circle';
+        }
+
+        function getStatusLabel(gpa) {
+            if (gpa >= 8.0) return 'Ótimo';
+            if (gpa >= 6.0) return 'Bom';
+            if (gpa >= 4.0) return 'Regular';
+            return 'Ruim';
+        }
+
+        function getGradeColor(gpa) {
+            if (gpa >= 8.0) return 'text-green-500';
+            if (gpa >= 6.0) return 'text-blue-500';
+            if (gpa >= 4.0) return 'text-yellow-500';
+            return 'text-red-500';
+        }
+
+        function getStatusColor(status) {
+            if (status === 'success') return 'bg-green-500';
+            if (status === 'warning') return 'bg-yellow-500';
+            return 'bg-red-500';
+        }
+
+        function getRandomDetails(count) {
+            var details = [];
+            for (var i = 0; i < count; i++) {
+                details.push(Math.random() > 0.3 ? 1 : 0);
+            }
+            return details;
+        }
+
+        function getStatusLabelFromStatus(status) {
+            if (status === 'success') return 'Excelente';
+            if (status === 'warning') return 'Atenção';
+            return 'Crítico';
+        }
+
+        function calcularPresencaAluno(student, totalAulas) {
+            if (!student || totalAulas === 0) return 0;
+            var presencas = student.presencas || 0;
+            return Math.round((presencas / totalAulas) * 100);
+        }
+
+        function getPresencaClass(percentual) {
+            if (percentual >= 75) return 'alta';
+            if (percentual >= 50) return 'media';
+            return 'baixa';
+        }
+
+        // ============================================================
+        // CÁLCULO DE ESTATÍSTICAS COMPLETAS
+        // ============================================================
+        function calcularEstatisticasTurma(students, totalAulas) {
+            if (!students || students.length === 0) {
+                return {
+                    averageAttendance: '0%',
+                    worstQuestion: '-',
+                    mediaTurma: 0,
+                    aprovados: 0,
+                    reprovados: 0,
+                    heatmap: { 'Interpretação': 0, 'Gramática': 0, 'Pontuação': 0, 'Ortografia': 0 }
+                };
+            }
+
+            var totalGpa = 0;
+            var totalSuccess = 0;
+            var totalPresencas = 0;
+            var aprovados = 0;
+            var reprovados = 0;
+            var heatmap = { 'Interpretação': 0, 'Gramática': 0, 'Pontuação': 0, 'Ortografia': 0 };
+
+            for (var i = 0; i < students.length; i++) {
+                var s = students[i];
+                totalGpa += s.gpa || 0;
+                totalSuccess += s.successRate || 0;
+                var presencaPercent = calcularPresencaAluno(s, totalAulas);
+                totalPresencas += presencaPercent;
+
+                if ((s.gpa || 0) >= NOTA_MINIMA_APROVACAO) {
+                    aprovados++;
+                } else {
+                    reprovados++;
+                }
+            }
+
+            var avgGpa = (totalGpa / students.length);
+            var mediaTurma = parseFloat(avgGpa.toFixed(1));
+            var avgSuccess = Math.round(totalSuccess / students.length);
+            var avgPresenca = students.length > 0 ? Math.round(totalPresencas / students.length) : 0;
+
+            var worstQuestion = '-';
+            var minGrade = 10;
+            for (var j = 0; j < students.length; j++) {
+                var hist = students[j].history || [];
+                for (var k = 0; k < hist.length; k++) {
+                    if (hist[k].grade < minGrade) {
+                        minGrade = hist[k].grade;
+                        worstQuestion = hist[k].title || 'Questão';
+                    }
+                }
+            }
+
+            return {
+                averageAttendance: avgPresenca + '%',
+                worstQuestion: worstQuestion,
+                mediaTurma: mediaTurma,
+                aprovados: aprovados,
+                reprovados: reprovados,
+                heatmap: {
+                    'Interpretação': Math.round(avgSuccess * 0.85),
+                    'Gramática': Math.round(avgSuccess * 0.72),
+                    'Pontuação': Math.round(avgSuccess * 0.78),
+                    'Ortografia': Math.round(avgSuccess * 0.92)
+                }
+            };
+        }
+
+        function calculateStudentStats(student) {
+            var history = student.history || [];
+            var total = history.length;
+            if (total === 0) {
+                return {
+                    gpa: 0,
+                    lastGrade: 0,
+                    testCount: 0,
+                    successRate: 0,
+                    trend: 'up',
+                    status: 'regular'
+                };
+            }
+            var sum = 0;
+            var successSum = 0;
+            var last = history[history.length - 1] || { grade: 0, correct: 0, wrong: 0 };
+            for (var i = 0; i < history.length; i++) {
+                sum += history[i].grade || 0;
+                var totalQ = (history[i].correct || 0) + (history[i].wrong || 0);
+                if (totalQ > 0) {
+                    successSum += ((history[i].correct || 0) / totalQ) * 100;
+                }
+            }
+            var gpa = parseFloat((sum / total).toFixed(1));
+            var successRate = Math.round(successSum / total);
+            var trend = 'up';
+            if (history.length >= 2) {
+                var lastTwo = history.slice(-2);
+                if (lastTwo[1].grade < lastTwo[0].grade) trend = 'down';
+            }
+            return {
+                gpa: gpa,
+                lastGrade: last.grade || 0,
+                testCount: total,
+                successRate: successRate,
+                trend: trend,
+                status: getStatusClass(gpa)
+            };
+        }
+
+        function updateStudentStats(student) {
+            var stats = calculateStudentStats(student);
+            student.gpa = stats.gpa;
+            student.lastGrade = stats.lastGrade;
+            student.testCount = stats.testCount;
+            student.successRate = stats.successRate;
+            student.trend = stats.trend;
+            student.status = stats.status;
+            return student;
+        }
+
+        // ==============================================================
+        // AVALIAÇÃO DO ALUNO EM RELAÇÃO À TURMA
+        // ==============================================================
+        function avaliarAluno(student, mediaTurma) {
+            if (!student || mediaTurma === undefined) return { status: 'regular', label: 'Regular', diff: 0 };
+            var diff = student.gpa - mediaTurma;
+            var status = 'regular';
+            var label = 'Regular';
+            if (diff >= 1.0) {
+                status = 'otimo';
+                label = 'Ótimo (Acima da média)';
+            } else if (diff >= 0.5) {
+                status = 'bom';
+                label = 'Bom (Próximo da média)';
+            } else if (diff >= -0.5) {
+                status = 'regular';
+                label = 'Regular (Na média)';
+            } else {
+                status = 'ruim';
+                label = 'Ruim (Abaixo da média)';
+            }
+            return {
+                status: status,
+                label: label,
+                diff: diff
+            };
+        }
+
+        // ============================================================
+        // FUNÇÕES DE NAVEGAÇÃO
+        // ============================================================
+        function navigateTo(view) {
+            App.view = view;
+            App.sidebarOpen = false;
+            App.showNotifications = false;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            render();
+        }
+
+        function toggleTheme() {
+            App.theme = App.theme === 'light' ? 'dark' : 'light';
+            render();
+        }
+
+        function closeSidebar() {
+            App.sidebarOpen = false;
+            render();
+        }
+
+        // ============================================================
+        // RENDER PRINCIPAL
+        // ============================================================
+        function render() {
+            var html = '';
+            var themeClass = App.theme === 'dark' ? 'dark' : '';
+
+            var toastHtml = '';
+            if (App.showSyncSuccess) {
+                toastHtml =
+                    '<div class="toast-success"><i class="fas fa-check-circle"></i><div><p class="text-sm font-black uppercase">Operação Realizada!</p><p class="text-xs opacity-90">' +
+                    App.mensagemToast + '</p></div><button onclick="App.showSyncSuccess=false;render();" class="text-white hover:opacity-70 ml-2"><i class="fas fa-times"></i></button></div>';
+            }
+
+            var viewHtml = '';
+            switch (App.view) {
+                case 'splash':
+                    viewHtml = renderSplash();
+                    break;
+                case 'login':
+                    viewHtml = renderLogin();
+                    break;
+                case 'register':
+                    viewHtml = renderRegister();
+                    break;
+                case 'success':
+                    viewHtml = renderSuccess();
+                    break;
+                case 'dashboard':
+                    viewHtml = renderDashboard();
+                    break;
+                case 'profile':
+                    viewHtml = renderProfile();
+                    break;
+                case 'salas':
+                    viewHtml = renderSalas();
+                    break;
+                case 'sala-detalhe':
+                    viewHtml = renderSalaDetalhe();
+                    break;
+                case 'aluno-detalhe':
+                    viewHtml = renderAlunoDetalhe();
+                    break;
+                case 'nova-turma':
+                    viewHtml = renderNovaTurma();
+                    break;
+                case 'relatorios':
+                    viewHtml = renderRelatorios();
+                    break;
+                case 'import':
+                    viewHtml = renderImport();
+                    break;
+                case 'scan':
+                    viewHtml = renderScan();
+                    break;
+                case 'confirm':
+                    viewHtml = renderConfirm();
+                    break;
+                case 'results':
+                    viewHtml = renderResults();
+                    break;
+                case 'compare':
+                    viewHtml = renderCompare();
+                    break;
+                case 'tips':
+                    viewHtml = renderTips();
+                    break;
+                case 'charts':
+                    viewHtml = renderCharts();
+                    break;
+                case 'discursive':
+                    viewHtml = renderDiscursive();
+                    break;
+                case 'ai_result':
+                    viewHtml = renderAiResult();
+                    break;
+                case 'aplicar-prova':
+                    viewHtml = renderAplicarProva();
+                    break;
+                default:
+                    viewHtml = renderSplash();
+            }
+
+            var sidebarHtml = '';
+            if (App.sidebarOpen) {
+                sidebarHtml = renderSidebar();
+            }
+
+            html =
+                '<div class="min-h-screen ' + themeClass + ' bg-[#f0f7f7] dark:bg-slate-900 font-sans text-gray-800 dark:text-slate-100 transition-colors duration-200">' +
+                toastHtml +
+                '<main class="flex-1 w-full flex flex-col relative"><div class="flex-1 w-full max-w-5xl mx-auto bg-white dark:bg-slate-800 min-h-screen shadow-xl flex flex-col relative overflow-hidden transition-colors">' +
+                viewHtml +
+                '</div></main>' +
+                sidebarHtml +
+                '</div>';
+
+            document.getElementById('app').innerHTML = html;
+
+            if (App.view === 'scan') {
+                setTimeout(initScan, 300);
+            }
+        }
+
+        // ============================================================
+        // LOGO
+        // ============================================================
+        function renderLogo(className) {
+            className = className || 'w-24 h-24';
+            return '<div class="logo-fixed ' + className + '">' +
+                '<img src="' + LOGO_BASE64 + '" alt="Automatic Correction" style="width:100%;height:100%;object-fit:contain;" />' +
+                '</div>';
+        }
+
+        function renderLogoText() {
+            return '<div class="text-center mt-3">' +
+                '<h1 class="text-2xl font-black tracking-widest text-[#7aa2a1] dark:text-[#a0c4c3]">AUTOMATIC CORRECTION</h1>' +
+                '<p class="text-xs tracking-wider mt-1 font-semibold opacity-90 text-[#7aa2a1] dark:text-[#a0c4c3]">AUTOMATIZE A CORREÇÃO, OTIMIZE O SEU TEMPO!</p>' +
+                '</div>';
+        }
+
+        function renderSimpleHeader(title) {
+            return '<div class="flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800">' +
+                '<button onclick="navigateTo(\'dashboard\')" class="text-gray-400 hover:text-black p-2 hover:bg-gray-50 rounded-full transition-colors"><i class="fas fa-arrow-left text-2xl"></i></button>' +
+                '<h2 class="text-lg font-black text-gray-700 dark:text-slate-100 tracking-wide">' + title +
+                '</h2>' +
+                '<div class="w-10"></div></div>';
+        }
+
+        // ============================================================
+        // SIDEBAR
+        // ============================================================
+        function renderSidebar() {
+            var profileImg = App.profileImage ?
+                '<img src="' + App.profileImage + '" alt="Perfil" class="w-full h-full object-cover" />' :
+                '<i class="fas fa-user text-2xl"></i>';
+
+            var themeIcon = App.theme === 'light' ? 'fa-moon' : 'fa-sun';
+            var themeLabel = App.theme === 'light' ? 'Modo Escuro' : 'Modo Claro';
+            var toggleClass = App.theme === 'dark' ? 'active' : 'inactive';
+
+            return '<div class="sidebar">' +
+                '<div class="sidebar-backdrop" onclick="closeSidebar()"></div>' +
+                '<div class="sidebar-content">' +
+                '<div class="p-6 flex flex-col h-full">' +
+                '<div class="flex justify-between items-center mb-8">' +
+                '<span class="text-sm font-semibold text-gray-500 dark:text-gray-400">Menu</span>' +
+                '<button onclick="closeSidebar()" class="text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white"><i class="fas fa-times text-2xl"></i></button>' +
+                '</div>' +
+                '<div class="flex items-center gap-4 mb-8 p-3 bg-white dark:bg-slate-700 rounded-xl shadow-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors" onclick="navigateTo(\'profile\');closeSidebar();">' +
+                '<div class="w-14 h-14 bg-gray-300 rounded-full flex items-center justify-center text-white overflow-hidden shrink-0">' +
+                profileImg +
+                '</div>' +
+                '<div class="overflow-hidden"><h3 class="font-bold text-gray-700 dark:text-gray-200 leading-tight truncate">' +
+                App.profileName + '</h3><p class="text-xs text-gray-500 dark:text-gray-400 italic mt-0.5 font-bold">Professor</p></div>' +
+                '</div>' +
+                '<div class="space-y-2">' +
+                '<button onclick="navigateTo(\'dashboard\');closeSidebar();" class="menu-item"><i class="fas fa-sync-alt text-[#7aa2a1]"></i> Painel Principal</button>' +
+                '<button onclick="navigateTo(\'salas\');closeSidebar();" class="menu-item"><i class="fas fa-users text-[#7aa2a1]"></i> Gestão de Salas (Turmas)</button>' +
+                '<button onclick="navigateTo(\'profile\');closeSidebar();" class="menu-item"><i class="fas fa-user text-[#7aa2a1]"></i> O Meu Perfil</button>' +
+                '</div>' +
+                '<div class="mt-8 pt-4 border-t dark:border-slate-700">' +
+                '<button onclick="toggleTheme()" class="w-full flex items-center justify-between py-2 px-4 rounded-lg bg-white dark:bg-slate-700 text-sm font-bold shadow-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors">' +
+                '<span class="flex items-center gap-2"><i class="fas ' + themeIcon + ' text-[#7aa2a1]"></i> ' + themeLabel + '</span>' +
+                '<div class="toggle-switch ' + toggleClass + '" onclick="event.stopPropagation();toggleTheme();"><div class="toggle-dot"></div></div>' +
+                '</button></div>' +
+                '<button onclick="logoutUser()" class="mt-auto flex items-center gap-2 text-red-500 font-bold hover:bg-red-50 dark:hover:bg-red-950/20 p-3 rounded-lg transition-colors">' +
+                '<i class="fas fa-sign-out-alt"></i> Sair</button>' +
+                '</div></div></div>';
+        }
+
+        function logoutUser() {
+            App.user = null;
+            navigateTo('login');
+        }
+
+        // ============================================================
+        // SPLASH
+        // ============================================================
+        function renderSplash() {
+            return '<div class="flex-1 flex flex-col items-center justify-center p-8 bg-white dark:bg-slate-800 cursor-pointer" onclick="navigateTo(\'login\')">' +
+                '<div class="animate-bounce flex flex-col items-center">' +
+                renderLogo('w-48 h-48') +
+                renderLogoText() +
+                '</div>' +
+                '<p class="text-gray-400 dark:text-gray-500 text-xs mt-16">Toque no ecrã para iniciar</p>' +
+                '</div>';
+        }
+
+        // ==============================================================
+        // LOGIN
+        // ==============================================================
+        function renderLogin() {
+            if (App.isLoading) {
+                return '<div class="flex-1 flex flex-col items-center justify-center p-8 bg-white dark:bg-slate-800 max-w-md mx-auto w-full">' +
+                    '<div class="mb-10 w-full flex flex-col items-center">' +
+                    renderLogo('w-32 h-32') +
+                    renderLogoText() +
+                    '</div>' +
+                    '<div class="w-full text-center py-10"><div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-[#7aa2a1] mx-auto"></div><p class="text-sm font-bold text-gray-500 mt-4">A autenticar...</p></div>' +
+                    '</div>';
+            }
+            return '<div class="flex-1 flex flex-col items-center justify-center p-8 bg-white dark:bg-slate-800 max-w-md mx-auto w-full">' +
+                '<div class="mb-10 w-full flex flex-col items-center">' +
+                renderLogo('w-32 h-32') +
+                renderLogoText() +
+                '</div>' +
+                '<div class="w-full space-y-3">' +
+                '<input type="email" placeholder="E-mail" class="input-style" value="' + App.email + '" onchange="App.email=this.value"/>' +
+                '<input type="password" placeholder="Senha" class="input-style" value="' + App.password + '" onchange="App.password=this.value"/>' +
+                '<div class="flex flex-col items-center gap-2 pt-2">' +
+                '<button onclick="handleLogin()" class="w-2/3 py-3 bg-[#e8f1f1] hover:bg-[#d0e1e1] text-[#7aa2a1] font-bold rounded-full text-sm transition-all active:scale-95">Entrar</button>' +
+                '<button onclick="navigateTo(\'register\')" class="text-xs text-[#a3bdbc] hover:underline font-bold mt-1">Criar conta</button>' +
+                '</div></div></div>';
+        }
+
+        function handleLogin() {
+            if (App.email && App.password) {
+                App.isLoading = true;
+                render();
+                setTimeout(function() {
+                    App.isLoading = false;
+                    App.user = { name: App.profileName, email: App.email };
+                    navigateTo('dashboard');
+                }, 1500);
+            }
+        }
+
+        // ============================================================
+        // REGISTER
+        // ============================================================
+        function renderRegister() {
+            return '<div class="flex-1 flex flex-col items-center py-10 px-8 bg-white dark:bg-slate-800 max-w-md mx-auto w-full">' +
+                renderLogo('w-24 h-24') +
+                renderLogoText() +
+                '<div class="w-full space-y-3 mt-8">' +
+                '<input type="text" placeholder="Nome" class="input-style" />' +
+                '<input type="text" placeholder="Apelido" class="input-style" />' +
+                '<input type="email" placeholder="E-mail" class="input-style" />' +
+                '<input type="password" placeholder="Palavra-passe" class="input-style" />' +
+                '<div class="flex items-start gap-2.5 my-6 pt-2">' +
+                '<input type="checkbox" class="mt-1 h-4 w-4 rounded" style="accentColor:#7aa2a1" />' +
+                '<span class="text-xs text-gray-500 dark:text-gray-400">Li e concordo com os termos de utilização e política de privacidade.</span>' +
+                '</div>' +
+                '<div class="flex flex-col gap-3 pt-4">' +
+                '<button onclick="navigateTo(\'success\')" class="btn-solid">Criar conta</button>' +
+                '<button onclick="navigateTo(\'login\')" class="text-sm font-bold text-gray-500 text-center hover:underline">Voltar ao Login</button>' +
+                '</div></div></div>';
+        }
+
+        // ============================================================
+        // SUCCESS
+        // ============================================================
+        function renderSuccess() {
+            return '<div class="flex-1 flex flex-col items-center justify-center p-8 bg-white dark:bg-slate-800 max-w-md mx-auto w-full">' +
+                '<div class="flex flex-col items-center mb-16">' +
+                '<div class="p-4 bg-[#e8f1f1] rounded-full mb-6"><i class="fas fa-check-circle text-7xl text-[#7aa2a1]"></i></div>' +
+                '<h2 class="text-3xl font-black tracking-wide text-gray-700 italic text-center">Registo realizado</h2>' +
+                '<h2 class="text-3xl font-black tracking-wide text-gray-700 italic text-center mt-1">com sucesso!</h2>' +
+                '</div>' +
+                '<button onclick="navigateTo(\'dashboard\')" class="btn-solid flex items-center justify-center gap-2">Aceder ao Painel <i class="fas fa-arrow-left rotate-180"></i></button>' +
+                '</div>';
+        }
+
+        // ============================================================
+        // DASHBOARD
+        // ============================================================
+        function renderDashboard() {
+            var items = [
+                { id: 'salas', icon: 'fa-users', label: 'GESTÃO DE SALAS\n(TURMAS)' },
+                { id: 'import', icon: 'fa-image', label: 'IMPORTAR IMAGEM\nDO GABARITO' },
+                { id: 'aplicar-prova', icon: 'fa-qrcode', label: 'APLICAR PROVA\nAOS ALUNOS' },
+                { id: 'results', icon: 'fa-check-circle', label: 'CORRIGIR\nAUTOMATICAMENTE' },
+                { id: 'compare', icon: 'fa-file-alt', label: 'COMPARAR COM O\nGABARITO OFICIAL' },
+                { id: 'tips', icon: 'fa-lightbulb', label: 'SUGESTÕES DE MELHORIA' },
+                { id: 'charts', icon: 'fa-chart-bar', label: 'GRÁFICOS DE\nDESEMPENHO' },
+                { id: 'discursive', icon: 'fa-pen', label: 'CORREÇÃO DISCURSIVA\nCOM IA' }
+            ];
+
+            var unreadCount = 0;
+            for (var i = 0; i < App.notifications.length; i++) {
+                if (App.notifications[i].unread) unreadCount++;
+            }
+
+            var notifHtml = '';
+            if (App.showNotifications) {
+                var listHtml = '';
+                for (var ni = 0; ni < App.notifications.length; ni++) {
+                    var n = App.notifications[ni];
+                    var cls = n.unread ? 'bg-[#e8f1f1] dark:bg-slate-600/50 font-semibold' :
+                        'bg-gray-50 dark:bg-slate-600/10 text-gray-500';
+                    listHtml += '<div class="p-2.5 rounded-xl text-xs transition-colors ' + cls +
+                        '"><p class="leading-tight text-gray-800 dark:text-gray-200">' + n.text +
+                        '</p><span class="text-[10px] text-gray-400 block mt-1">' + n.time +
+                        '</span></div>';
+                }
+                notifHtml =
+                    '<div class="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-700 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-600 z-50 p-4 animate-fade-in">' +
+                    '<div class="flex justify-between items-center mb-3 pb-2 border-b dark:border-slate-600">' +
+                    '<span class="text-xs font-black uppercase text-gray-500 dark:text-gray-400">Notificações</span>' +
+                    '<button onclick="markAllRead()" class="text-[10px] text-[#7aa2a1] hover:underline font-bold">Marcar como lidas</button>' +
+                    '</div>' +
+                    '<div class="space-y-3 max-h-60 overflow-y-auto">' + listHtml + '</div></div>';
+            }
+
+            var itemsHtml = '';
+            for (var mi = 0; mi < items.length; mi++) {
+                var item = items[mi];
+                itemsHtml += '<button onclick="navigateTo(\'' + item.id + '\')" class="dashboard-item">' +
+                    '<i class="fas ' + item.icon + '"></i><span>' + item.label + '</span></button>';
+            }
+
+            return '<div class="flex-1 flex flex-col bg-white dark:bg-slate-800">' +
+                '<div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-700">' +
+                '<button onclick="App.sidebarOpen=true;render();" class="text-gray-600 dark:text-gray-300 p-2 hover:bg-gray-50 rounded-lg transition-colors"><i class="fas fa-bars text-3xl"></i></button>' +
+                '<div class="flex flex-col items-center">' +
+                renderLogo('w-14 h-14') +
+                renderLogoText() +
+                '</div>' +
+                '<div class="flex items-center gap-2">' +
+                '<div class="relative cursor-pointer text-green-500 p-2"><i class="fas fa-cloud text-xl animate-bounce"></i><div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-slate-800"></div></div>' +
+                '<div class="relative">' +
+                '<button onclick="App.showNotifications=!App.showNotifications;render();" class="p-2 text-gray-600 dark:text-gray-300 relative hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full transition-colors">' +
+                '<i class="fas fa-bell text-2xl"></i>' +
+                (unreadCount > 0 ? '<span class="notification-badge">' + unreadCount + '</span>' : '') +
+                '</button>' + notifHtml +
+                '</div></div></div>' +
+                '<div class="flex-1 p-6 md:p-10 flex flex-col items-center justify-center max-w-4xl mx-auto w-full">' +
+                '<h2 class="text-gray-400 dark:text-gray-500 font-bold text-xs tracking-widest uppercase mb-6 self-start flex items-center gap-2">' +
+                '<i class="fas fa-sparkles text-[#7aa2a1]"></i> Painel de ferramentas do docente</h2>' +
+                '<div class="dashboard-grid">' + itemsHtml + '</div></div></div>';
+        }
+
+        function markAllRead() {
+            for (var i = 0; i < App.notifications.length; i++) {
+                App.notifications[i].unread = false;
+            }
+            App.showNotifications = false;
+            render();
+        }
+
+        // ============================================================
+        // PROFILE
+        // ============================================================
+        function renderProfile() {
+            var profileImg = App.profileImage ?
+                '<img src="' + App.profileImage + '" alt="Perfil" class="w-full h-full object-cover" />' :
+                '<i class="fas fa-user text-6xl text-gray-400"></i>';
+
+            return '<div class="flex-1 flex flex-col p-6 md:p-10 bg-white dark:bg-slate-800 max-w-2xl mx-auto w-full">' +
+                '<div class="flex items-center justify-between mb-8">' +
+                '<button onclick="navigateTo(\'dashboard\')" class="text-gray-400 hover:text-black dark:hover:text-white p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full transition-colors"><i class="fas fa-arrow-left text-2xl"></i></button>' +
+                '<h2 class="text-xl font-bold text-gray-700 dark:text-slate-100">O Meu Perfil</h2><div class="w-10"></div>' +
+                '</div>' +
+                '<div class="flex flex-col items-center mb-8">' +
+                '<div class="relative group cursor-pointer" onclick="document.getElementById(\'profileInput\').click()">' +
+                '<div class="w-32 h-32 bg-gray-200 dark:bg-slate-700 rounded-full flex items-center justify-center overflow-hidden border-4 border-[#e8f1f1] dark:border-slate-700 shadow-md">' +
+                profileImg +
+                '</div>' +
+                '<div class="absolute bottom-1 right-1 bg-[#7aa2a1] text-white p-2 rounded-full shadow border-2 border-white hover:bg-[#688f8e] transition-colors"><i class="fas fa-camera text-sm"></i></div>' +
+                '</div>' +
+                '<p class="text-xs text-gray-400 dark:text-gray-500 mt-3 font-semibold">Clique para alterar a imagem de perfil</p>' +
+                '<input type="file" id="profileInput" class="hidden" accept="image/*" onchange="handleProfileImage(event)" />' +
+                '</div>' +
+                '<div class="space-y-4 max-w-md mx-auto w-full">' +
+                '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 ml-1 mb-1.5 block">Nome do Docente</label><input type="text" class="input-style" value="' +
+                App.profileName + '" onchange="App.profileName=this.value" /></div>' +
+                '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 ml-1 mb-1.5 block">Biografia / Escola</label><input type="text" class="input-style" value="' +
+                App.profileBio + '" onchange="App.profileBio=this.value" /></div>' +
+                '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 ml-1 mb-1.5 block">E-mail de Contacto</label><input type="email" class="input-style" value="' +
+                App.profileEmail + '" onchange="App.profileEmail=this.value" /></div>' +
+                '<div class="pt-6"><button onclick="navigateTo(\'dashboard\')" class="btn-solid">Guardar Alterações</button></div>' +
+                '</div></div>';
+        }
+
+        function handleProfileImage(event) {
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onloadend = function() {
+                    App.profileImage = reader.result;
+                    render();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ============================================================
+        // SALAS (TURMAS)
+        // ============================================================
+        function renderSalas() {
+            var classesHtml = '';
+            if (App.classes.length === 0) {
+                classesHtml =
+                    '<div class="empty-state col-span-2"><i class="fas fa-users"></i><h3>Nenhuma turma criada</h3><p>Clique no botão "Nova Turma" para começar a organizar as suas salas.</p></div>';
+            } else {
+                for (var ci = 0; ci < App.classes.length; ci++) {
+                    var c = App.classes[ci];
+                    var statusLabel = getStatusLabelFromStatus(c.status);
+                    var presencaBadge = '<span class="presenca-badge ' + (c.statistics && c.statistics.averageAttendance ?
+                        getPresencaClass(parseInt(c.statistics.averageAttendance)) : 'media') +
+                        '">' + (c.statistics ? c.statistics.averageAttendance : '0%') + '</span>';
+
+                    classesHtml +=
+                        '<div class="bg-white dark:bg-slate-700 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-slate-600 flex flex-col justify-between relative overflow-hidden hover:shadow-md transition-shadow">' +
+                        '<div class="absolute top-0 left-0 w-2 h-full ' + getStatusColor(c.status) + '"></div>' +
+                        '<div class="pl-3">' +
+                        '<div class="flex justify-between items-start mb-2"><h4 class="text-lg font-black text-gray-800 dark:text-white">' +
+                        c.name + '</h4><span class="text-xs font-semibold px-2 py-1 rounded-full ' +
+                        (c.status === 'success' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                            c.status === 'warning' ?
+                            'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                            'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400') + '">' +
+                        statusLabel +
+                        '</span></div>' +
+                        '<p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mb-1">Média Geral: <span class="text-gray-800 dark:text-gray-100 font-bold">' +
+                        c.average + ' / 10</span></p>' +
+                        '<p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Alunos: <span class="text-gray-800 dark:text-gray-100 font-bold">' +
+                        c.studentCount + ' matriculados</span></p>' +
+                        '<p class="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-2">Presença Média: ' +
+                        presencaBadge + '</p>' +
+                        '<p class="text-xs text-gray-400 dark:text-gray-500 truncate">Atividade Recente: ' +
+                        c.lastActivity + '</p></div>' +
+                        '<div class="grid grid-cols-2 gap-2 mt-6 pt-4 border-t border-gray-100 dark:border-slate-600 pl-3">' +
+                        '<button onclick="selectClass(\'' + c.id +
+                        '\')" class="py-2.5 px-3 bg-[#e8f1f1] dark:bg-slate-600 text-[#7aa2a1] dark:text-slate-100 text-xs font-bold rounded-xl hover:opacity-80 transition-opacity">Ver Alunos</button>' +
+                        '<button onclick="selectClassAndNavigate(\'' + c.id +
+                        '\',\'relatorios\')" class="py-2.5 px-3 bg-gray-50 dark:bg-slate-600/50 text-gray-600 dark:text-slate-300 text-xs font-bold rounded-xl hover:opacity-80 transition-opacity">Relatórios</button>' +
+                        '</div></div>';
+                }
+            }
+
+            return '<div class="flex-1 flex flex-col bg-white dark:bg-slate-800 max-w-4xl mx-auto w-full">' +
+                renderSimpleHeader('Salas & Turmas') +
+                '<div class="p-6 md:p-8 flex-1">' +
+                '<div class="flex justify-between items-center mb-6">' +
+                '<h3 class="text-gray-400 dark:text-gray-500 font-bold text-xs tracking-widest uppercase">Minhas turmas ativas</h3>' +
+                '<button onclick="navigateTo(\'nova-turma\')" class="flex items-center gap-1 text-xs font-black uppercase text-[#7aa2a1] hover:underline"><i class="fas fa-plus"></i> Nova Turma</button>' +
+                '</div>' +
+                '<div class="grid md:grid-cols-2 gap-6">' + classesHtml + '</div></div></div>';
+        }
+
+        function selectClass(classId) {
+            for (var i = 0; i < App.classes.length; i++) {
+                if (App.classes[i].id === classId) {
+                    App.selectedClass = App.classes[i];
+                    App.showStatsTab = false;
+                    navigateTo('sala-detalhe');
+                    return;
+                }
+            }
+        }
+
+        function selectClassAndNavigate(classId, view) {
+            for (var i = 0; i < App.classes.length; i++) {
+                if (App.classes[i].id === classId) {
+                    App.selectedClass = App.classes[i];
+                    navigateTo(view);
+                    return;
+                }
+            }
+        }
+
+        // ============================================================
+        // SALA DETALHE
+        // ============================================================
+        function renderSalaDetalhe() {
+            var cls = App.selectedClass;
+            if (!cls) return '<div class="p-8 text-center">Turma não encontrada</div>';
+
+            var totalAulas = cls.totalAulas || 0;
+            var stats = calcularEstatisticasTurma(cls.students || [], totalAulas);
+            cls.statistics = stats;
+            var students = getSortedStudents(cls.students || []);
+            var showStats = App.showStatsTab;
+
+            // Modal de Falta
+            var modalFaltaHtml = '';
+            if (App.mostrarModalFalta) {
+                var alunoSelecionado = null;
+                for (var mi = 0; mi < students.length; mi++) {
+                    if (students[mi].id === App.registroFalta.alunoId) {
+                        alunoSelecionado = students[mi];
+                        break;
+                    }
+                }
+                if (alunoSelecionado) {
+                    modalFaltaHtml =
+                        '<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">' +
+                        '<div class="bg-white dark:bg-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl">' +
+                        '<h3 class="text-lg font-black text-gray-800 dark:text-white mb-4"><i class="fas fa-user-slash text-red-500"></i> Registrar Falta</h3>' +
+                        '<p class="text-sm text-gray-600 dark:text-gray-300 mb-4">Aluno: <strong>' + alunoSelecionado.name + '</strong></p>' +
+                        '<p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Faltas atuais: <strong>' + (alunoSelecionado.faltas || 0) + '</strong></p>' +
+                        '<div class="space-y-4">' +
+                        '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Quantidade de Faltas</label>' +
+                        '<input type="number" class="input-style" value="' + App.registroFalta.quantidade +
+                        '" min="1" max="10" onchange="App.registroFalta.quantidade=parseInt(this.value)||1" /></div>' +
+                        '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Data</label>' +
+                        '<input type="date" class="input-style" value="' + (App.registroFalta.data || new Date().toISOString().split('T')[0]) +
+                        '" onchange="App.registroFalta.data=this.value" /></div>' +
+                        '</div>' +
+                        '<div class="flex gap-3 mt-6">' +
+                        '<button onclick="confirmarFalta()" class="flex-1 btn-solid bg-red-500 hover:bg-red-600">Confirmar Falta</button>' +
+                        '<button onclick="cancelarFalta()" class="flex-1 btn-secondary">Cancelar</button>' +
+                        '</div></div></div>';
+                }
+            }
+
+            // Modal de Presença
+            var modalPresencaHtml = '';
+            if (App.mostrarModalPresenca) {
+                var alunoSelecionado2 = null;
+                for (var mi2 = 0; mi2 < students.length; mi2++) {
+                    if (students[mi2].id === App.registroPresenca.alunoId) {
+                        alunoSelecionado2 = students[mi2];
+                        break;
+                    }
+                }
+                if (alunoSelecionado2) {
+                    modalPresencaHtml =
+                        '<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">' +
+                        '<div class="bg-white dark:bg-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl">' +
+                        '<h3 class="text-lg font-black text-gray-800 dark:text-white mb-4"><i class="fas fa-user-check text-green-500"></i> Registrar Presença</h3>' +
+                        '<p class="text-sm text-gray-600 dark:text-gray-300 mb-4">Aluno: <strong>' + alunoSelecionado2.name + '</strong></p>' +
+                        '<p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Presenças atuais: <strong>' + (alunoSelecionado2.presencas || 0) + '</strong></p>' +
+                        '<div class="space-y-4">' +
+                        '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Quantidade de Presenças</label>' +
+                        '<input type="number" class="input-style" value="' + App.registroPresenca.quantidade +
+                        '" min="1" max="10" onchange="App.registroPresenca.quantidade=parseInt(this.value)||1" /></div>' +
+                        '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Data</label>' +
+                        '<input type="date" class="input-style" value="' + (App.registroPresenca.data || new Date().toISOString().split('T')[0]) +
+                        '" onchange="App.registroPresenca.data=this.value" /></div>' +
+                        '</div>' +
+                        '<div class="flex gap-3 mt-6">' +
+                        '<button onclick="confirmarPresenca()" class="flex-1 btn-solid bg-green-500 hover:bg-green-600">Confirmar Presença</button>' +
+                        '<button onclick="cancelarPresenca()" class="flex-1 btn-secondary">Cancelar</button>' +
+                        '</div></div></div>';
+                }
+            }
+
+            // Modal de Nota
+            var modalNotaHtml = '';
+            if (App.mostrarModalNota) {
+                var alunoSelecionado3 = null;
+                for (var mi3 = 0; mi3 < students.length; mi3++) {
+                    if (students[mi3].id === App.modalNota.alunoId) {
+                        alunoSelecionado3 = students[mi3];
+                        break;
+                    }
+                }
+                if (alunoSelecionado3) {
+                    modalNotaHtml =
+                        '<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">' +
+                        '<div class="bg-white dark:bg-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl">' +
+                        '<h3 class="text-lg font-black text-gray-800 dark:text-white mb-4"><i class="fas fa-graduation-cap text-[#7aa2a1]"></i> Adicionar Nota</h3>' +
+                        '<p class="text-sm text-gray-600 dark:text-gray-300 mb-4">Aluno: <strong>' + alunoSelecionado3.name + '</strong></p>' +
+                        '<p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Média atual: <strong>' + alunoSelecionado3.gpa + '/10</strong></p>' +
+                        '<div class="space-y-4">' +
+                        '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Título da Prova</label>' +
+                        '<input type="text" class="input-style" value="' + App.modalNota.titulo +
+                        '" onchange="App.modalNota.titulo=this.value" placeholder="Ex: Prova Trimestral" /></div>' +
+                        '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Nota (0-10)</label>' +
+                        '<input type="number" class="input-style" value="' + App.modalNota.nota +
+                        '" min="0" max="10" step="0.5" onchange="App.modalNota.nota=parseFloat(this.value)||0" /></div>' +
+                        '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Data</label>' +
+                        '<input type="date" class="input-style" value="' + (App.modalNota.data || new Date().toISOString().split('T')[0]) +
+                        '" onchange="App.modalNota.data=this.value" /></div>' +
+                        '</div>' +
+                        '<div class="flex gap-3 mt-6">' +
+                        '<button onclick="confirmarNota()" class="flex-1 btn-solid bg-[#7aa2a1] hover:bg-[#688f8e]">Adicionar Nota</button>' +
+                        '<button onclick="cancelarNota()" class="flex-1 btn-secondary">Cancelar</button>' +
+                        '</div></div></div>';
+                }
+            }
+
+            var contentHtml = '';
+            if (showStats) {
+                // Estatísticas
+                var heatmap = cls.statistics.heatmap || {};
+                var heatmapHtml = '';
+                for (var key in heatmap) {
+                    var val = heatmap[key];
+                    var colorClass = val >= 75 ? 'bg-green-500' : (val >= 60 ? 'bg-yellow-500' : 'bg-red-500');
+                    heatmapHtml +=
+                        '<div><div class="flex justify-between text-xs font-bold text-gray-600 dark:text-slate-300 mb-1"><span>' +
+                        key + '</span><span>' + val + '% Proficência</span></div>' +
+                        '<div class="w-full bg-gray-100 dark:bg-slate-600 h-3 rounded-full overflow-hidden"><div class="h-full rounded-full transition-all duration-500 ' +
+                        colorClass + '" style="width:' + val + '%"></div></div></div>';
+                }
+
+                var sortedStudents = students.slice().sort(function(a, b) { return b.gpa - a.gpa; });
+                var rankingHtml = '';
+                for (var ri = 0; ri < Math.min(sortedStudents.length, 10); ri++) {
+                    var s = sortedStudents[ri];
+                    var pos = ri + 1;
+                    var medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : '#' + pos;
+                    var initials = getInitials(s.name);
+                    var statusClass = getStatusClass(s.gpa);
+                    rankingHtml +=
+                        '<div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-xl">' +
+                        '<div class="flex items-center gap-3"><span class="font-bold text-gray-400 w-8">' + medal + '</span>' +
+                        '<div class="student-avatar-placeholder w-8 h-8 text-sm">' + initials + '</div>' +
+                        '<div><p class="text-sm font-bold text-gray-800 dark:text-white">' + s.name + '</p>' +
+                        '<p class="text-[10px] text-gray-400 dark:text-gray-500">' + s.testCount + ' provas</p></div></div>' +
+                        '<div class="flex items-center gap-4"><span class="status-badge ' + statusClass + ' text-xs">' + s.gpa + '</span>' +
+                        '<span class="text-xs font-bold text-gray-400">' + (s.gpa >= NOTA_MINIMA_APROVACAO ? '✅' : '❌') + '</span></div></div>';
+                }
+
+                contentHtml =
+                    '<div class="p-6 flex-1 space-y-8 overflow-y-auto">' +
+                    '<div class="grid grid-cols-2 md:grid-cols-4 gap-4">' +
+                    '<div class="bg-white dark:bg-slate-700 p-5 rounded-3xl border dark:border-slate-600 text-center"><span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase">Presença Média</span><h4 class="text-3xl font-black text-[#7aa2a1] mt-1">' +
+                    cls.statistics.averageAttendance + '</h4></div>' +
+                    '<div class="bg-white dark:bg-slate-700 p-5 rounded-3xl border dark:border-slate-600 text-center"><span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase">Média da Turma</span><h4 class="text-3xl font-black text-[#7aa2a1] mt-1">' +
+                    cls.statistics.mediaTurma + '</h4></div>' +
+                    '<div class="bg-white dark:bg-slate-700 p-5 rounded-3xl border dark:border-slate-600 text-center"><span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase">Aprovados</span><h4 class="text-3xl font-black text-green-500 mt-1">' +
+                    cls.statistics.aprovados + '</h4></div>' +
+                    '<div class="bg-white dark:bg-slate-700 p-5 rounded-3xl border dark:border-slate-600 text-center"><span class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase">Reprovados</span><h4 class="text-3xl font-black text-red-500 mt-1">' +
+                    cls.statistics.reprovados + '</h4></div></div>' +
+                    '<div class="bg-white dark:bg-slate-700 p-6 rounded-3xl border dark:border-slate-600">' +
+                    '<h4 class="text-xs font-black tracking-widest text-gray-400 dark:text-gray-500 uppercase mb-4">Ranking de Desempenho</h4>' +
+                    '<div class="space-y-3">' + rankingHtml + '</div></div>' +
+                    '<div class="bg-white dark:bg-slate-700 p-6 rounded-3xl border dark:border-slate-600"><h4 class="text-xs font-black tracking-widest text-gray-400 dark:text-gray-500 uppercase mb-4">Heatmap de Dificuldades por Conteúdo</h4><div class="space-y-4">' +
+                    heatmapHtml + '</div></div>' +
+                    '<div class="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 p-6 rounded-3xl">' +
+                    '<h4 class="text-sm font-black text-indigo-950 dark:text-indigo-400 uppercase mb-2 flex items-center gap-2"><i class="fas fa-sparkles"></i> Diagnóstico Geral da Turma (IA)</h4>' +
+                    '<p class="text-xs text-indigo-900 dark:text-indigo-300 leading-relaxed">A turma apresenta um desempenho ' +
+                    (stats.mediaTurma >= 7.0 ? 'excelente' : stats.mediaTurma >= 5.0 ? 'regular' : 'preocupante') +
+                    ', com média de ' + stats.mediaTurma + '. ' +
+                    (stats.aprovados > stats.reprovados ?
+                        'A maioria dos alunos está aprovada. Parabéns!' :
+                        'É recomendado reforço para os alunos em recuperação.') +
+                    ' As principais dificuldades estão em <strong>' + stats.worstQuestion + '</strong></p>' +
+                    '</div></div>';
+            } else {
+                // Lista de alunos
+                var studentsHtml = '';
+                if (students.length > 0) {
+                    for (var si = 0; si < students.length; si++) {
+                        var s = students[si];
+                        var trendIcon = s.trend === 'up' ? '<i class="fas fa-arrow-up text-green-500"></i>' :
+                            '<i class="fas fa-arrow-down text-red-500"></i>';
+
+                        var bars = '';
+                        var hist = s.history || [];
+                        var limit = Math.min(4, hist.length);
+                        for (var hi = hist.length - 1; hi >= Math.max(0, hist.length - 4); hi--) {
+                            var grade = hist[hi].grade;
+                            var color = grade >= 7.0 ? 'bg-green-400' : (grade >= 5.0 ? 'bg-yellow-400' : 'bg-red-400');
+                            bars += '<div class="w-3.5 rounded-t-sm transition-all ' + color +
+                                '" style="height:' + (grade * 10) + '%;" title="Nota: ' + grade + '"></div>';
+                        }
+
+                        var initials = getInitials(s.name);
+                        var presencaPercent = calcularPresencaAluno(s, totalAulas);
+                        var presencaClass = getPresencaClass(presencaPercent);
+                        var presencaBadge = '<span class="presenca-badge ' + presencaClass + '">' + presencaPercent + '%</span>';
+
+                        var avaliacao = avaliarAluno(s, stats.mediaTurma);
+                        var statusLabel = avaliacao.label;
+                        var statusClass = avaliacao.status;
+                        var statusBadge = '<span class="status-badge ' + statusClass + '"><i class="fas ' + getStatusIcon(s.gpa) +
+                            '"></i> ' + statusLabel + '</span>';
+
+                        var aprovado = s.gpa >= NOTA_MINIMA_APROVACAO;
+                        var aprovadoBadge = aprovado ?
+                            '<span class="text-xs font-bold text-green-500"><i class="fas fa-check-circle"></i> Aprovado</span>' :
+                            '<span class="text-xs font-bold text-red-500"><i class="fas fa-times-circle"></i> Reprovado</span>';
+
+                        studentsHtml +=
+                            '<div class="bg-white dark:bg-slate-700 border border-gray-100 dark:border-slate-600 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row items-center justify-between gap-4">' +
+                            '<div class="flex items-center gap-4 w-full sm:w-auto">' +
+                            '<div class="student-avatar-placeholder">' + initials + '</div>' +
+                            '<div><h4 class="font-black text-gray-800 dark:text-white flex items-center gap-1.5">' + s.name + ' ' +
+                            trendIcon +
+                            '</h4><p class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase mt-0.5">N° ' + s.number +
+                            ' | ' + s.testCount + ' provas</p>' +
+                            '<div class="flex items-center gap-2 mt-1 flex-wrap">' + presencaBadge +
+                            ' | Faltas: ' + (s.faltas || 0) +
+                            ' | ' + aprovadoBadge +
+                            '</div></div></div>' +
+                            '<div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">' +
+                            '<div class="flex items-end gap-1.5 h-10 w-24">' + bars + '</div>' +
+                            '<div class="text-right"><p class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase">Média</p><p class="text-lg font-black ' +
+                            getGradeColor(s.gpa) + '">' + s.gpa + '</p>' +
+                            '<p class="text-[10px] text-gray-400 dark:text-gray-500">' + statusBadge + '</p></div>' +
+                            '<div class="flex flex-wrap gap-1">' +
+                            '<button onclick="abrirModalNota(\'' + s.id + '\')" class="btn-info text-xs py-1 px-2" title="Adicionar Nota"><i class="fas fa-graduation-cap"></i></button>' +
+                            '<button onclick="abrirModalFalta(\'' + s.id + '\')" class="btn-danger text-xs py-1 px-2" title="Registrar Falta"><i class="fas fa-user-slash"></i></button>' +
+                            '<button onclick="abrirModalPresenca(\'' + s.id + '\')" class="btn-success text-xs py-1 px-2" title="Registrar Presença"><i class="fas fa-user-check"></i></button>' +
+                            '<button onclick="selectStudent(\'' + s.id + '\')" class="btn-secondary text-xs py-1 px-2" title="Ver Detalhes"><i class="fas fa-eye"></i></button>' +
+                            '</div></div></div>';
+                    }
+                } else {
+                    studentsHtml =
+                        '<div class="empty-state"><i class="fas fa-user-graduate"></i><h3>Nenhum aluno matriculado</h3><p>Adicione alunos a esta turma através da aba "Alunos" na criação da turma.</p></div>';
+                }
+
+                contentHtml =
+                    '<div class="p-6 flex-1 flex flex-col gap-6">' +
+                    '<div class="flex flex-col sm:flex-row gap-4">' +
+                    '<div class="relative flex-1"><i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"></i>' +
+                    '<input type="text" placeholder="Pesquisar aluno..." class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-700 dark:text-white rounded-2xl outline-none focus:ring-2 focus:ring-[#7aa2a1]" value="' +
+                    App.searchQuery + '" oninput="App.searchQuery=this.value;render();"></div>' +
+                    '<div class="flex items-center gap-2 bg-gray-50 dark:bg-slate-700 rounded-2xl px-4 py-2.5">' +
+                    '<i class="fas fa-sliders-h text-[#7aa2a1]"></i>' +
+                    '<select class="bg-transparent text-xs font-bold text-gray-600 dark:text-slate-300 outline-none" onchange="App.activeSort=this.value;render();">' +
+                    '<option value="alfabetica">Ordem Alfabética</option>' +
+                    '<option value="melhor-desempenho">Melhor Desempenho</option>' +
+                    '<option value="pior-desempenho">Pior Desempenho</option>' +
+                    '<option value="media">Última Nota</option>' +
+                    '<option value="frequencia">Taxa de Acertos</option>' +
+                    '</select></div></div>' +
+                    '<div class="flex flex-wrap gap-2 items-center">' +
+                    '<button onclick="adicionarAula()" class="btn-success text-xs py-2 px-4"><i class="fas fa-plus"></i> Registrar Aula</button>' +
+                    '<span class="text-xs text-gray-500 dark:text-gray-400">Total de aulas: ' + totalAulas + '</span>' +
+                    '<span class="text-xs text-gray-500 dark:text-gray-400">Presença média: ' + stats.averageAttendance +
+                    '</span>' +
+                    '<span class="text-xs text-gray-500 dark:text-gray-400">Média turma: ' + stats.mediaTurma + '</span>' +
+                    '<span class="text-xs text-gray-500 dark:text-gray-400">Aprovados: ' + stats.aprovados + '/' + (stats
+                        .aprovados + stats.reprovados) + '</span>' +
+                    '</div>' +
+                    '<div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">' +
+                    ['todos', 'aprovados', 'recuperacao', 'melhorando', 'queda'].map(function(f) {
+                        var labels = {
+                            todos: 'Todos',
+                            aprovados: 'Aprovados (≥' + NOTA_MINIMA_APROVACAO + ')',
+                            recuperacao: 'Recuperação (<' + NOTA_MINIMA_APROVACAO + ')',
+                            melhorando: 'Em Crescimento',
+                            queda: 'Em Queda'
+                        };
+                        var active = App.activeFilter === f ? 'bg-[#7aa2a1] text-white' :
+                            'bg-[#e8f1f1] dark:bg-slate-700 text-[#7aa2a1] dark:text-slate-300';
+                        return '<button onclick="App.activeFilter=\'' + f +
+                            '\';render();" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ' +
+                            active + '">' + labels[f] + '</button>';
+                    }).join('') +
+                    '</div>' +
+                    '<div class="space-y-4">' + studentsHtml + '</div></div>';
+            }
+
+            return '<div class="flex-1 flex flex-col bg-white dark:bg-slate-800 max-w-4xl mx-auto w-full">' +
+                '<div class="flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 sticky top-0 z-10">' +
+                '<button onclick="navigateTo(\'salas\')" class="text-gray-400 hover:text-black dark:hover:text-white p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full transition-colors"><i class="fas fa-arrow-left text-2xl"></i></button>' +
+                '<div class="text-center"><h2 class="text-lg font-black text-gray-800 dark:text-slate-100">' + cls.name +
+                '</h2><p class="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase mt-0.5">Média: ' + cls.average +
+                '/10 | Aulas: ' + totalAulas + ' | Presença: ' + stats.averageAttendance + ' | Aprovados: ' + stats.aprovados +
+                '/' + (stats.aprovados + stats.reprovados) + '</p></div>' +
+                '<div class="w-10"></div></div>' +
+                '<div class="flex border-b dark:border-slate-700">' +
+                '<button onclick="App.showStatsTab=false;render();" class="flex-1 py-4 text-center font-bold text-xs uppercase tracking-wider transition-colors ' +
+                (!App.showStatsTab ? 'text-[#7aa2a1] border-b-2 border-[#7aa2a1]' :
+                    'text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700/50') +
+                '">Alunos (' + students.length + ')</button>' +
+                '<button onclick="App.showStatsTab=true;render();" class="flex-1 py-4 text-center font-bold text-xs uppercase tracking-wider transition-colors ' +
+                (App.showStatsTab ? 'text-[#7aa2a1] border-b-2 border-[#7aa2a1]' :
+                    'text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700/50') +
+                '">Estatísticas & Análise</button></div>' +
+                contentHtml +
+                modalFaltaHtml +
+                modalPresencaHtml +
+                modalNotaHtml +
+                '</div>';
+        }
+
+        // ============================================================
+        // FUNÇÕES DE PRESENÇA, FALTAS E NOTAS
+        // ============================================================
+        function adicionarAula() {
+            var cls = App.selectedClass;
+            if (!cls) return;
+
+            cls.totalAulas = (cls.totalAulas || 0) + 1;
+
+            for (var i = 0; i < cls.students.length; i++) {
+                calcularPresencaAluno(cls.students[i], cls.totalAulas);
+            }
+
+            cls.statistics = calcularEstatisticasTurma(cls.students, cls.totalAulas);
+
+            for (var j = 0; j < App.classes.length; j++) {
+                if (App.classes[j].id === cls.id) {
+                    App.classes[j] = cls;
+                    break;
+                }
+            }
+
+            App.mensagemToast = 'Aula registrada com sucesso! Total: ' + cls.totalAulas + ' aulas.';
+            App.showSyncSuccess = true;
+            render();
+            setTimeout(function() {
+                App.showSyncSuccess = false;
+                render();
+            }, 3000);
+        }
+
+        function abrirModalFalta(alunoId) {
+            App.registroFalta.alunoId = alunoId;
+            App.registroFalta.quantidade = 1;
+            App.registroFalta.data = new Date().toISOString().split('T')[0];
+            App.mostrarModalFalta = true;
+            render();
+        }
+
+        function confirmarFalta() {
+            var cls = App.selectedClass;
+            if (!cls) return;
+
+            var alunoId = App.registroFalta.alunoId;
+            var qtd = App.registroFalta.quantidade || 1;
+
+            for (var i = 0; i < cls.students.length; i++) {
+                if (cls.students[i].id === alunoId) {
+                    cls.students[i].faltas = (cls.students[i].faltas || 0) + qtd;
+                    var totalAulas = cls.totalAulas || 0;
+                    var presencas = totalAulas - cls.students[i].faltas;
+                    if (presencas < 0) presencas = 0;
+                    cls.students[i].presencas = presencas;
+                    break;
+                }
+            }
+
+            cls.statistics = calcularEstatisticasTurma(cls.students, cls.totalAulas);
+
+            for (var j = 0; j < App.classes.length; j++) {
+                if (App.classes[j].id === cls.id) {
+                    App.classes[j] = cls;
+                    break;
+                }
+            }
+
+            App.mostrarModalFalta = false;
+            App.mensagemToast = 'Falta registrada com sucesso!';
+            App.showSyncSuccess = true;
+            render();
+            setTimeout(function() {
+                App.showSyncSuccess = false;
+                render();
+            }, 3000);
+        }
+
+        function cancelarFalta() {
+            App.mostrarModalFalta = false;
+            App.registroFalta.alunoId = '';
+            render();
+        }
+
+        function abrirModalPresenca(alunoId) {
+            App.registroPresenca.alunoId = alunoId;
+            App.registroPresenca.quantidade = 1;
+            App.registroPresenca.data = new Date().toISOString().split('T')[0];
+            App.mostrarModalPresenca = true;
+            render();
+        }
+
+        function confirmarPresenca() {
+            var cls = App.selectedClass;
+            if (!cls) return;
+
+            var alunoId = App.registroPresenca.alunoId;
+            var qtd = App.registroPresenca.quantidade || 1;
+
+            for (var i = 0; i < cls.students.length; i++) {
+                if (cls.students[i].id === alunoId) {
+                    cls.students[i].presencas = (cls.students[i].presencas || 0) + qtd;
+                    var totalAulas = cls.totalAulas || 0;
+                    var faltas = totalAulas - cls.students[i].presencas;
+                    if (faltas < 0) faltas = 0;
+                    cls.students[i].faltas = faltas;
+                    break;
+                }
+            }
+
+            cls.statistics = calcularEstatisticasTurma(cls.students, cls.totalAulas);
+
+            for (var j = 0; j < App.classes.length; j++) {
+                if (App.classes[j].id === cls.id) {
+                    App.classes[j] = cls;
+                    break;
+                }
+            }
+
+            App.mostrarModalPresenca = false;
+            App.mensagemToast = 'Presença registrada com sucesso!';
+            App.showSyncSuccess = true;
+            render();
+            setTimeout(function() {
+                App.showSyncSuccess = false;
+                render();
+            }, 3000);
+        }
+
+        function cancelarPresenca() {
+            App.mostrarModalPresenca = false;
+            App.registroPresenca.alunoId = '';
+            render();
+        }
+
+        function abrirModalNota(alunoId) {
+            App.modalNota.alunoId = alunoId;
+            App.modalNota.titulo = '';
+            App.modalNota.nota = 0;
+            App.modalNota.data = new Date().toISOString().split('T')[0];
+            App.mostrarModalNota = true;
+            render();
+        }
+
+        function confirmarNota() {
+            var cls = App.selectedClass;
+            if (!cls) return;
+
+            var alunoId = App.modalNota.alunoId;
+            var titulo = App.modalNota.titulo.trim();
+            var nota = App.modalNota.nota;
+            var data = App.modalNota.data || new Date().toLocaleDateString('pt-PT');
+
+            if (!titulo) {
+                alert('Por favor, insira um título para a prova.');
+                return;
+            }
+            if (nota <= 0 || nota > 10) {
+                alert('Por favor, insira uma nota válida entre 0 e 10.');
+                return;
+            }
+
+            var alunoEncontrado = null;
+            for (var i = 0; i < cls.students.length; i++) {
+                if (cls.students[i].id === alunoId) {
+                    alunoEncontrado = cls.students[i];
+                    break;
+                }
+            }
+
+            if (!alunoEncontrado) {
+                alert('Aluno não encontrado.');
+                return;
+            }
+
+            var novaProva = {
+                id: 'manual-' + Date.now(),
+                title: titulo,
+                grade: nota,
+                date: data,
+                correct: Math.round(nota * 2),
+                wrong: Math.round((10 - nota) * 2),
+                details: getRandomDetails(20)
+            };
+
+            alunoEncontrado.history = alunoEncontrado.history || [];
+            alunoEncontrado.history.push(novaProva);
+            updateStudentStats(alunoEncontrado);
+
+            // Recalcular média da turma
+            var totalGpa = 0;
+            for (var j = 0; j < cls.students.length; j++) {
+                totalGpa += cls.students[j].gpa || 0;
+            }
+            cls.average = cls.students.length > 0 ? parseFloat((totalGpa / cls.students.length).toFixed(1)) : 0;
+
+            cls.statistics = calcularEstatisticasTurma(cls.students, cls.totalAulas);
+
+            for (var k = 0; k < App.classes.length; k++) {
+                if (App.classes[k].id === cls.id) {
+                    App.classes[k] = cls;
+                    break;
+                }
+            }
+
+            App.mostrarModalNota = false;
+            App.mensagemToast = 'Nota adicionada com sucesso!';
+            App.showSyncSuccess = true;
+            render();
+            setTimeout(function() {
+                App.showSyncSuccess = false;
+                render();
+            }, 3000);
+        }
+
+        function cancelarNota() {
+            App.mostrarModalNota = false;
+            App.modalNota = { alunoId: '', titulo: '', nota: 0, data: '' };
+            render();
+        }
+
+        function getSortedStudents(list) {
+            var result = (list || []).slice();
+            var filter = App.activeFilter;
+            var search = App.searchQuery.toLowerCase();
+
+            if (filter === 'aprovados') result = result.filter(function(s) { return s.gpa >= NOTA_MINIMA_APROVACAO; });
+            else if (filter === 'recuperacao') result = result.filter(function(s) { return s.gpa < NOTA_MINIMA_APROVACAO; });
+            else if (filter === 'melhorando') result = result.filter(function(s) { return s.trend === 'up'; });
+            else if (filter === 'queda') result = result.filter(function(s) { return s.trend === 'down'; });
+
+            if (search) result = result.filter(function(s) { return s.name.toLowerCase().indexOf(search) !== -1; });
+
+            switch (App.activeSort) {
+                case 'alfabetica':
+                    return result.sort(function(a, b) { return a.name.localeCompare(b.name); });
+                case 'melhor-desempenho':
+                    return result.sort(function(a, b) { return b.gpa - a.gpa; });
+                case 'pior-desempenho':
+                    return result.sort(function(a, b) { return a.gpa - b.gpa; });
+                case 'media':
+                    return result.sort(function(a, b) { return b.lastGrade - a.lastGrade; });
+                case 'frequencia':
+                    return result.sort(function(a, b) { return b.successRate - a.successRate; });
+                default:
+                    return result;
+            }
+        }
+
+        function selectStudent(studentId) {
+            var cls = App.selectedClass;
+            if (cls) {
+                for (var i = 0; i < cls.students.length; i++) {
+                    if (cls.students[i].id === studentId) {
+                        App.selectedStudent = cls.students[i];
+                        App.selectedHistoricalTest = null;
+                        navigateTo('aluno-detalhe');
+                        return;
+                    }
+                }
+            }
+        }
+
+        // ============================================================
+        // ALUNO DETALHE - COM AVALIAÇÃO COMPLETA
+        // ============================================================
+        function renderAlunoDetalhe() {
+            var student = App.selectedStudent;
+            var cls = App.selectedClass;
+            if (!student) return '<div class="p-8 text-center">Aluno não encontrado</div>';
+
+            var totalAulas = cls ? cls.totalAulas || 0 : 0;
+            var presencaPercent = calcularPresencaAluno(student, totalAulas);
+            var presencaClass = getPresencaClass(presencaPercent);
+
+            var mediaTurma = cls ? cls.statistics.mediaTurma || 0 : 0;
+            var avaliacao = avaliarAluno(student, mediaTurma);
+            var aprovado = student.gpa >= NOTA_MINIMA_APROVACAO;
+
+            var historyHtml = '';
+            if (student.history && student.history.length > 0) {
+                var sortedHistory = student.history.slice().reverse();
+                for (var hi = 0; hi < sortedHistory.length; hi++) {
+                    var test = sortedHistory[hi];
+                    var gradeClass = test.grade >= 7.0 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                        test.grade >= 5.0 ?
+                        'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
+                        'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400';
+                    historyHtml +=
+                        '<div onclick="App.selectedHistoricalTest=\'' + test.id +
+                        '\';render();" class="bg-white dark:bg-slate-700 border border-gray-100 dark:border-slate-600 p-4 rounded-2xl flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-600/50 transition-colors shadow-xs">' +
+                        '<div><h5 class="font-bold text-gray-800 dark:text-white text-sm">' + test.title +
+                        '</h5><p class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase mt-1">' + test.date +
+                        '</p></div>' +
+                        '<div class="flex items-center gap-3"><span class="text-sm font-black px-3 py-1 rounded-xl ' +
+                        gradeClass + '">' + test.grade + '/10</span><i class="fas fa-chevron-right text-gray-400"></i></div>' +
+                        '</div>';
+                }
+            } else {
+                historyHtml =
+                    '<div class="empty-state py-8"><i class="fas fa-file-alt"></i><h3>Nenhuma prova registrada</h3><p>Este aluno ainda não possui provas no histórico. Adicione uma nota clicando no botão "Adicionar Nota" na lista da turma.</p></div>';
+            }
+
+            var testDetailHtml = '';
+            if (App.selectedHistoricalTest) {
+                var found = null;
+                for (var ti = 0; ti < (student.history || []).length; ti++) {
+                    if (student.history[ti].id === App.selectedHistoricalTest) {
+                        found = student.history[ti];
+                        break;
+                    }
+                }
+                if (found) {
+                    var qHtml = '';
+                    var details = found.details || [];
+                    for (var qi = 0; qi < details.length; qi++) {
+                        qHtml += '<div class="question-item ' + (details[qi] === 1 ? 'correct' : 'wrong') +
+                            '" title="' + (details[qi] === 1 ? 'Correta' : 'Incorreta') + '">' + (qi + 1) + '</div>';
+                    }
+                    testDetailHtml =
+                        '<div class="bg-gray-50 dark:bg-slate-900 border dark:border-slate-700 p-6 rounded-3xl animate-fade-in relative">' +
+                        '<button onclick="App.selectedHistoricalTest=null;render();" class="absolute top-4 right-4 text-gray-400 hover:text-black dark:hover:text-white transition-colors"><i class="fas fa-times text-xl"></i></button>' +
+                        '<h4 class="font-black text-gray-800 dark:text-white mb-2 text-md">Gabarito: ' + found.title +
+                        '</h4>' +
+                        '<p class="text-xs text-gray-400 dark:text-gray-500 mb-6 font-semibold">Nota: ' + found.grade +
+                        '/10 | ' + found.correct + ' Acertos e ' + found.wrong + ' Erros</p>' +
+                        '<div class="question-grid">' + qHtml + '</div></div>';
+                }
+            }
+
+            var trendIcon = student.trend === 'up' ? '📈' : '📉';
+            var initials = getInitials(student.name);
+            var statusClass = getStatusClass(student.gpa);
+            var statusIcon = getStatusIcon(student.gpa);
+            var statusLabel = getStatusLabel(student.gpa);
+
+            // Calcular evolução
+            var evolucao = 0;
+            var evolucaoLabel = 'Sem dados';
+            var evolucaoClass = 'text-gray-400';
+            if (student.history && student.history.length >= 2) {
+                var sorted = student.history.slice().sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+                var primeira = sorted[0].grade;
+                var ultima = sorted[sorted.length - 1].grade;
+                evolucao = parseFloat((ultima - primeira).toFixed(1));
+                if (evolucao > 0) {
+                    evolucaoLabel = '+' + evolucao + ' (Melhorou)';
+                    evolucaoClass = 'text-green-500';
+                } else if (evolucao < 0) {
+                    evolucaoLabel = evolucao + ' (Piorou)';
+                    evolucaoClass = 'text-red-500';
+                } else {
+                    evolucaoLabel = '0 (Estável)';
+                    evolucaoClass = 'text-yellow-500';
+                }
+            }
+
+            return '<div class="flex-1 flex flex-col bg-white dark:bg-slate-800 max-w-4xl mx-auto w-full">' +
+                renderSimpleHeader('Dossiê do Aluno') +
+                '<div class="p-6 overflow-y-auto flex-1 space-y-8">' +
+                '<div class="gradient-card p-6 rounded-3xl text-white flex flex-col sm:flex-row items-center gap-6 shadow-md">' +
+                '<div class="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-4xl font-black text-white border-4 border-white/20">' +
+                initials + '</div>' +
+                '<div class="text-center sm:text-left flex-1">' +
+                '<h3 class="text-2xl font-black">' + student.name + '</h3>' +
+                '<p class="text-xs font-semibold opacity-80 uppercase mt-0.5">Número de Chamada: ' + student.number +
+                ' | ' + (cls ? cls.name : '') + '</p>' +
+                '<div class="flex flex-wrap items-center gap-3 mt-2">' +
+                '<span class="text-xs font-semibold opacity-80">Provas: ' + student.testCount + '</span>' +
+                '<span class="text-xs font-semibold opacity-80">Tendência: ' + trendIcon + '</span>' +
+                '<span class="presenca-badge ' + presencaClass + ' text-xs">Presença: ' + presencaPercent + '%</span>' +
+                '<span class="text-xs font-semibold opacity-80">(' + student.presencas + '/' + totalAulas +
+                ' aulas) | Faltas: ' + (student.faltas || 0) + '</span>' +
+                '</div></div>' +
+                '<div class="text-right">' +
+                '<span class="status-badge ' + statusClass + ' text-base px-4 py-2"><i class="fas ' + statusIcon +
+                '"></i> ' + statusLabel + '</span>' +
+                '<p class="text-xs font-semibold opacity-80 mt-1">' + (aprovado ? '✅ Aprovado' : '❌ Reprovado') + '</p>' +
+                '<p class="text-xs font-semibold opacity-70 mt-1">Média da turma: ' + mediaTurma + '</p></div></div>' +
+
+                '<div class="grid grid-cols-2 md:grid-cols-4 gap-4">' +
+                '<div class="bg-white dark:bg-slate-700 border dark:border-slate-600 p-4 rounded-2xl text-center shadow-sm"><span class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase">Média Geral</span><p class="text-2xl font-black mt-1 ' +
+                getGradeColor(student.gpa) + '">' + student.gpa + '/10</p></div>' +
+                '<div class="bg-white dark:bg-slate-700 border dark:border-slate-600 p-4 rounded-2xl text-center shadow-sm"><span class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase">Última Nota</span><p class="text-2xl font-black mt-1 text-gray-700 dark:text-slate-200">' +
+                student.lastGrade + '/10</p></div>' +
+                '<div class="bg-white dark:bg-slate-700 border dark:border-slate-600 p-4 rounded-2xl text-center shadow-sm"><span class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase">Taxa de Acerto</span><p class="text-2xl font-black mt-1 text-[#7aa2a1]">' +
+                student.successRate + '%</p></div>' +
+                '<div class="bg-white dark:bg-slate-700 border dark:border-slate-600 p-4 rounded-2xl text-center shadow-sm"><span class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase">Evolução</span><p class="text-2xl font-black mt-1 ' +
+                evolucaoClass + '">' + evolucaoLabel + '</p></div></div>' +
+
+                '<div class="bg-white dark:bg-slate-700 p-5 rounded-2xl border dark:border-slate-600">' +
+                '<h4 class="text-xs font-black tracking-widest text-gray-400 dark:text-gray-500 uppercase mb-3">Avaliação em Relação à Turma</h4>' +
+                '<div class="flex items-center gap-4">' +
+                '<div class="flex-1">' +
+                '<div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">' +
+                '<span>Posição: ' + avaliacao.label + '</span>' +
+                '<span>Diferença: ' + (avaliacao.diff >= 0 ? '+' : '') + avaliacao.diff.toFixed(1) + ' da média</span>' +
+                '</div>' +
+                '<div class="progress-bar-container">' +
+                '<div class="progress-bar-fill ' + avaliacao.status + '" style="width:' + Math.min(100, (student.gpa / 10) *
+                    100) + '%"></div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="flex justify-between text-[10px] text-gray-400 mt-1">' +
+                '<span>0</span><span>Média: ' + mediaTurma + '</span><span>10</span>' +
+                '</div>' +
+                '</div>' +
+                '<div class="text-center">' +
+                '<span class="text-3xl font-black ' + (student.gpa >= mediaTurma ? 'text-green-500' : 'text-red-500') +
+                '">' + (student.gpa >= mediaTurma ? '↑' : '↓') + '</span>' +
+                '</div></div></div>' +
+
+                '<div><h4 class="text-xs font-black tracking-widest text-gray-400 dark:text-gray-500 uppercase mb-4">Histórico de Provas (' +
+                (student.history || []).length + ')</h4><div class="space-y-3">' + historyHtml + '</div></div>' +
+                testDetailHtml +
+                '</div></div>';
+        }
+
+        // ============================================================
+        // NOVA TURMA
+        // ============================================================
+        function renderNovaTurma() {
+            var tab = App.activeTab || 'config';
+
+            var configHtml =
+                '<div class="space-y-6">' +
+                '<div class="bg-gray-50 dark:bg-slate-700 p-6 rounded-2xl border dark:border-slate-600">' +
+                '<h3 class="text-sm font-black text-gray-700 dark:text-gray-200 mb-4">Configurações da Turma</h3>' +
+                '<div class="space-y-4">' +
+                '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Nome da Turma</label><input type="text" class="input-style" value="' +
+                App.novaTurma.nome + '" onchange="App.novaTurma.nome=this.value" placeholder="Ex: 9° Ano B" /></div>' +
+                '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Nível de Ensino</label><select class="input-style appearance-none" onchange="App.novaTurma.nivel=this.value">' +
+                '<option value="Ensino Básico"' + (App.novaTurma.nivel === 'Ensino Básico' ? ' selected' : '') +
+                '>Ensino Básico</option>' +
+                '<option value="Ensino Secundário"' + (App.novaTurma.nivel === 'Ensino Secundário' ? ' selected' : '') +
+                '>Ensino Secundário</option>' +
+                '<option value="Ensino Profissional"' + (App.novaTurma.nivel === 'Ensino Profissional' ? ' selected' : '') +
+                '>Ensino Profissional</option>' +
+                '</select></div>' +
+                '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Status da Turma</label><select class="input-style appearance-none" onchange="App.novaTurma.status=this.value">' +
+                '<option value="success"' + (App.novaTurma.status === 'success' ? ' selected' : '') + '>Excelente</option>' +
+                '<option value="warning"' + (App.novaTurma.status === 'warning' ? ' selected' : '') + '>Atenção</option>' +
+                '<option value="danger"' + (App.novaTurma.status === 'danger' ? ' selected' : '') + '>Crítico</option>' +
+                '</select></div>' +
+                '</div></div>' +
+                '<div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-2xl border border-blue-100 dark:border-blue-900">' +
+                '<p class="text-xs text-blue-800 dark:text-blue-300"><i class="fas fa-info-circle"></i> As estatísticas de presença, média da turma e heatmap serão calculadas automaticamente pelo sistema conforme os alunos forem adicionados e as notas forem registradas.</p>' +
+                '<p class="text-xs text-blue-800 dark:text-blue-300 mt-2"><i class="fas fa-graduation-cap"></i> Nota mínima para aprovação: ' +
+                NOTA_MINIMA_APROVACAO + '</p>' +
+                '</div></div>';
+
+            var alunosHtml = '<div class="space-y-6">' +
+                '<div class="bg-gray-50 dark:bg-slate-700 p-6 rounded-2xl border dark:border-slate-600">' +
+                '<h3 class="text-sm font-black text-gray-700 dark:text-gray-200 mb-4 flex items-center justify-between">' +
+                '<span>Alunos Matriculados (' + (App.novaTurma.alunos || []).length + ')</span>' +
+                '<button onclick="adicionarAluno()" class="btn-success text-xs">+ Adicionar Aluno</button>' +
+                '</h3>';
+
+            if (App.novaTurma.alunos && App.novaTurma.alunos.length > 0) {
+                alunosHtml += '<div class="space-y-3 max-h-96 overflow-y-auto scrollbar-hide">';
+                for (var ai = 0; ai < App.novaTurma.alunos.length; ai++) {
+                    var aluno = App.novaTurma.alunos[ai];
+                    var initials = getInitials(aluno.name || 'Aluno');
+                    alunosHtml +=
+                        '<div class="student-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">' +
+                        '<div class="flex items-center gap-3 w-full sm:w-auto">' +
+                        '<div class="student-avatar-placeholder">' + initials + '</div>' +
+                        '<div><p class="font-bold text-gray-800 dark:text-white text-sm">' + (aluno.name ||
+                            'Novo Aluno') +
+                        '</p><p class="text-xs text-gray-500 dark:text-gray-400">N° ' + (aluno.number || 0) +
+                        ' | Média: ' + (aluno.gpa || 0) + '</p></div></div>' +
+                        '<div class="flex items-center gap-2 w-full sm:w-auto">' +
+                        '<button onclick="editarAluno(\'' + aluno.id +
+                        '\')" class="btn-secondary text-xs py-1 px-3">Editar</button>' +
+                        '<button onclick="removerAluno(\'' + aluno.id +
+                        '\')" class="btn-danger text-xs py-1 px-3">Remover</button>' +
+                        '</div></div>';
+                }
+                alunosHtml += '</div>';
+            } else {
+                alunosHtml +=
+                    '<div class="empty-state py-8"><i class="fas fa-user-plus"></i><h3>Nenhum aluno adicionado</h3><p>Clique em "Adicionar Aluno" para começar a matricular.</p></div>';
+            }
+            alunosHtml += '</div></div>';
+
+            var provasHtml = '<div class="space-y-6">' +
+                '<div class="bg-gray-50 dark:bg-slate-700 p-6 rounded-2xl border dark:border-slate-600">' +
+                '<h3 class="text-sm font-black text-gray-700 dark:text-gray-200 mb-4">Adicionar Prova Manual</h3>' +
+                '<div class="grid grid-cols-2 gap-4">' +
+                '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Título</label><input type="text" class="input-style" value="' +
+                App.novaProva.title + '" onchange="App.novaProva.title=this.value" placeholder="Ex: Teste 1" /></div>' +
+                '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Nota</label><input type="number" class="input-style" value="' +
+                App.novaProva.grade + '" onchange="App.novaProva.grade=parseFloat(this.value)||0" min="0" max="10" step="0.5" /></div>' +
+                '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Data</label><input type="date" class="input-style" value="' +
+                App.novaProva.date + '" onchange="App.novaProva.date=this.value" /></div>' +
+                '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Acertos</label><input type="number" class="input-style" value="' +
+                App.novaProva.correct + '" onchange="App.novaProva.correct=parseInt(this.value)||0" min="0" /></div>' +
+                '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Erros</label><input type="number" class="input-style" value="' +
+                App.novaProva.wrong + '" onchange="App.novaProva.wrong=parseInt(this.value)||0" min="0" /></div>' +
+                '<div>' +
+                '<button onclick="adicionarProvaManual()" class="btn-success w-full mt-2">Adicionar Prova a Todos os Alunos</button>' +
+                '</div>' +
+                '<div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-2xl border border-blue-100 dark:border-blue-900 col-span-2">' +
+                '<p class="text-xs text-blue-800 dark:text-blue-300"><i class="fas fa-info-circle"></i> As provas adicionadas serão registradas no histórico de cada aluno e as médias serão recalculadas automaticamente pelo sistema.</p>' +
+                '</div></div>';
+
+            var tabsHtml =
+                '<div class="flex gap-2 mb-6 border-b dark:border-slate-700 pb-4">' +
+                '<button class="tab-button ' + (tab === 'config' ? 'active' : '') +
+                '" onclick="App.activeTab=\'config\';render();"><i class="fas fa-cog"></i> Configurações</button>' +
+                '<button class="tab-button ' + (tab === 'alunos' ? 'active' : '') +
+                '" onclick="App.activeTab=\'alunos\';render();"><i class="fas fa-users"></i> Alunos</button>' +
+                '<button class="tab-button ' + (tab === 'provas' ? 'active' : '') +
+                '" onclick="App.activeTab=\'provas\';render();"><i class="fas fa-file-alt"></i> Provas</button>' +
+                '</div>';
+
+            var tabContent = '';
+            if (tab === 'config') tabContent = configHtml;
+            else if (tab === 'alunos') tabContent = alunosHtml;
+            else if (tab === 'provas') tabContent = provasHtml;
+
+            return '<div class="flex-1 flex flex-col bg-white dark:bg-slate-800 max-w-4xl mx-auto w-full">' +
+                '<div class="flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-700">' +
+                '<button onclick="navigateTo(\'salas\')" class="text-gray-400 hover:text-black dark:hover:text-white transition-colors"><i class="fas fa-arrow-left text-2xl"></i></button>' +
+                '<h2 class="text-lg font-black text-gray-700 dark:text-slate-100">Configurar Nova Turma</h2><div class="w-6"></div>' +
+                '</div>' +
+                '<div class="p-6 flex-1 overflow-y-auto">' +
+                tabsHtml +
+                tabContent +
+                '<div class="mt-6 flex gap-4">' +
+                '<button onclick="salvarTurma()" class="flex-1 btn-solid">💾 Salvar Turma</button>' +
+                '<button onclick="cancelarTurma()" class="flex-1 btn-secondary">Cancelar</button>' +
+                '</div></div></div>';
+        }
+
+        // ============================================================
+        // FUNÇÕES DA NOVA TURMA
+        // ============================================================
+        function adicionarAluno() {
+            var novoAluno = {
+                id: generateId(),
+                number: (App.novaTurma.alunos || []).length + 1,
+                name: 'Aluno ' + ((App.novaTurma.alunos || []).length + 1),
+                gpa: 0,
+                lastGrade: 0,
+                testCount: 0,
+                successRate: 0,
+                trend: 'up',
+                faltas: 0,
+                presencas: 0,
+                history: []
+            };
+            App.novaTurma.alunos.push(novoAluno);
+            render();
+        }
+
+        function removerAluno(id) {
+            if (confirm('Deseja remover este aluno?')) {
+                App.novaTurma.alunos = App.novaTurma.alunos.filter(function(a) { return a.id !== id; });
+                for (var i = 0; i < App.novaTurma.alunos.length; i++) {
+                    App.novaTurma.alunos[i].number = i + 1;
+                }
+                render();
+            }
+        }
+
+        function editarAluno(id) {
+            var aluno = null;
+            for (var i = 0; i < App.novaTurma.alunos.length; i++) {
+                if (App.novaTurma.alunos[i].id === id) {
+                    aluno = App.novaTurma.alunos[i];
+                    break;
+                }
+            }
+            if (!aluno) return;
+
+            var novoNome = prompt('Nome do aluno:', aluno.name);
+            if (novoNome !== null && novoNome.trim()) {
+                aluno.name = novoNome.trim();
+            }
+
+            var novaNota = prompt('Média Geral (0-10):', aluno.gpa);
+            if (novaNota !== null) {
+                var gpa = parseFloat(novaNota);
+                if (!isNaN(gpa) && gpa >= 0 && gpa <= 10) {
+                    aluno.gpa = gpa;
+                    aluno.lastGrade = gpa;
+                    var stats = calculateStudentStats(aluno);
+                    aluno.successRate = stats.successRate;
+                    aluno.testCount = stats.testCount;
+                    aluno.trend = stats.trend;
+                }
+            }
+            render();
+        }
+
+        function adicionarProvaManual() {
+            var prova = App.novaProva;
+            if (!prova.title.trim()) {
+                alert('Por favor, insira um título para a prova.');
+                return;
+            }
+            if (prova.grade <= 0 || prova.grade > 10) {
+                alert('Por favor, insira uma nota válida entre 0 e 10.');
+                return;
+            }
+
+            var alunos = App.novaTurma.alunos || [];
+            if (alunos.length === 0) {
+                alert('Adicione alunos primeiro.');
+                return;
+            }
+
+            for (var i = 0; i < alunos.length; i++) {
+                var novoTeste = {
+                    id: 'manual-' + Date.now() + '-' + i,
+                    title: prova.title,
+                    grade: prova.grade,
+                    date: prova.date || new Date().toLocaleDateString('pt-PT'),
+                    correct: prova.correct || Math.round(prova.grade * 2),
+                    wrong: prova.wrong || Math.round((10 - prova.grade) * 2),
+                    details: getRandomDetails(20)
+                };
+                alunos[i].history = alunos[i].history || [];
+                alunos[i].history.push(novoTeste);
+                updateStudentStats(alunos[i]);
+            }
+
+            var totalGpa = 0;
+            for (var j = 0; j < alunos.length; j++) {
+                totalGpa += alunos[j].gpa || 0;
+            }
+            var mediaTurma = alunos.length > 0 ? parseFloat((totalGpa / alunos.length).toFixed(1)) : 0;
+            var totalAulas = App.novaTurma.totalAulas || 0;
+            App.novaTurma.statistics = calcularEstatisticasTurma(alunos, totalAulas);
+            App.novaTurma.statistics.mediaTurma = mediaTurma;
+            App.novaProva = { title: '', grade: 0, date: '', correct: 0, wrong: 0 };
+            render();
+            alert('Prova adicionada a ' + alunos.length + ' alunos com sucesso!');
+        }
+
+        function salvarTurma() {
+            var nome = App.novaTurma.nome.trim();
+            if (!nome) {
+                alert('Por favor, insira um nome para a turma.');
+                return;
+            }
+
+            for (var i = 0; i < App.classes.length; i++) {
+                if (App.classes[i].name === nome) {
+                    alert('Já existe uma turma com este nome. Por favor, escolha outro nome.');
+                    return;
+                }
+            }
+
+            var alunos = App.novaTurma.alunos || [];
+            var totalGpa = 0;
+            for (var j = 0; j < alunos.length; j++) {
+                totalGpa += alunos[j].gpa || 0;
+            }
+            var average = alunos.length > 0 ? parseFloat((totalGpa / alunos.length).toFixed(1)) : 0;
+            var totalAulas = App.novaTurma.totalAulas || 0;
+            var stats = calcularEstatisticasTurma(alunos, totalAulas);
+            stats.mediaTurma = average;
+
+            var novaTurma = {
+                id: 'turma-' + Date.now(),
+                name: nome + ' - ' + App.novaTurma.nivel,
+                studentCount: alunos.length,
+                average: average,
+                lastActivity: 'Criada manualmente',
+                status: App.novaTurma.status || 'success',
+                totalAulas: totalAulas,
+                students: alunos,
+                statistics: stats
+            };
+
+            App.classes.push(novaTurma);
+            App.novaTurma = {
+                nome: '',
+                nivel: 'Ensino Básico',
+                status: 'success',
+                totalAulas: 0,
+                alunos: [],
+                statistics: {
+                    averageAttendance: '0%',
+                    worstQuestion: '-',
+                    mediaTurma: 0,
+                    aprovados: 0,
+                    reprovados: 0,
+                    heatmap: { 'Interpretação': 0, 'Gramática': 0, 'Pontuação': 0, 'Ortografia': 0 }
+                }
+            };
+            App.isCreating = false;
+            App.activeTab = 'config';
+
+            navigateTo('salas');
+        }
+
+        function cancelarTurma() {
+            App.novaTurma = {
+                nome: '',
+                nivel: 'Ensino Básico',
+                status: 'success',
+                totalAulas: 0,
+                alunos: [],
+                statistics: {
+                    averageAttendance: '0%',
+                    worstQuestion: '-',
+                    mediaTurma: 0,
+                    aprovados: 0,
+                    reprovados: 0,
+                    heatmap: { 'Interpretação': 0, 'Gramática': 0, 'Pontuação': 0, 'Ortografia': 0 }
+                }
+            };
+            App.isCreating = false;
+            App.activeTab = 'config';
+            navigateTo('salas');
+        }
+
+        // ============================================================
+        // RELATÓRIOS
+        // ============================================================
+        function renderRelatorios() {
+            var cls = App.selectedClass;
+            if (!cls) return '<div class="p-8 text-center">Turma não encontrada</div>';
+
+            var students = cls.students || [];
+            var aprovados = students.filter(function(s) { return s.gpa >= NOTA_MINIMA_APROVACAO; }).length;
+            var recuperacao = students.filter(function(s) { return s.gpa < NOTA_MINIMA_APROVACAO; }).length;
+            var melhor = students.slice().sort(function(a, b) { return b.gpa - a.gpa; })[0] || null;
+
+            // Heatmap grid
+            var heatmapData = [];
+            var totalStudents = students.length;
+            for (var hi = 0; hi < 40; hi++) {
+                var type = 'low';
+                var rand = Math.random();
+                if (rand < 0.3) type = 'high';
+                else if (rand < 0.6) type = 'medium';
+                heatmapData.push(type);
+            }
+
+            var heatmapHtml = '';
+            for (var h = 0; h < heatmapData.length; h++) {
+                heatmapHtml += '<div class="heatmap-item ' + heatmapData[h] + '">' + (h + 1) + '</div>';
+            }
+
+            var studentsListHtml = '';
+            var sortedStudents = students.slice().sort(function(a, b) { return b.gpa - a.gpa; });
+            for (var si = 0; si < Math.min(sortedStudents.length, 10); si++) {
+                var s = sortedStudents[si];
+                var statusClass = getStatusClass(s.gpa);
+                studentsListHtml +=
+                    '<div onclick="selectStudentRelatorio(\'' + s.id +
+                    '\')" class="bg-gray-50 dark:bg-slate-800 p-4 rounded-2xl border dark:border-slate-700 flex justify-between items-center cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">' +
+                    '<div><h5 class="font-bold text-gray-800 dark:text-white text-sm">' + s.name +
+                    '</h5><p class="text-xs text-gray-400 dark:text-gray-500">N° ' + s.number + ' | ' + s.testCount +
+                    ' provas</p></div>' +
+                    '<div class="flex items-center gap-4"><span class="status-badge ' + statusClass + '">' + s.gpa +
+                    '</span><span class="text-xs font-bold text-gray-400">' + (s.gpa >= NOTA_MINIMA_APROVACAO ? '✅' :
+                        '❌') + '</span>' +
+                    '<i class="fas fa-chevron-right text-gray-300"></i></div></div>';
+            }
+
+            return '<div class="flex-1 flex flex-col bg-[#f8fafa] dark:bg-slate-900 w-full transition-colors h-screen overflow-hidden">' +
+                '<div class="flex items-center justify-between p-6 bg-white dark:bg-slate-800 border-b dark:border-slate-700 sticky top-0 z-10 shadow-sm">' +
+                '<button onclick="navigateTo(\'salas\')" class="text-gray-400 hover:text-[#7aa2a1] transition-colors"><i class="fas fa-arrow-left text-2xl"></i></button>' +
+                '<div class="text-center"><h2 class="text-lg font-black text-gray-800 dark:text-white uppercase tracking-wider">Painel Analítico</h2><p class="text-xs text-[#7aa2a1] font-bold">' +
+                cls.name + '</p></div>' +
+                '<button onclick="downloadReport()" class="text-[#7aa2a1] hover:bg-[#e8f1f1] dark:hover:bg-slate-700 p-2 rounded-full transition-colors" title="Exportar Relatório"><i class="fas fa-download text-2xl"></i></button>' +
+                '</div>' +
+                '<div class="flex-1 overflow-y-auto p-6 space-y-6">' +
+                '<div class="grid grid-cols-2 md:grid-cols-4 gap-4">' +
+                '<div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-sm flex flex-col justify-center items-center text-center"><span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Média da Turma</span><span class="text-3xl font-black ' +
+                (cls.average >= 7 ? 'text-green-500' : 'text-yellow-500') + '">' + cls.average + '</span></div>' +
+                '<div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-sm flex flex-col justify-center items-center text-center"><span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Aprovados</span><span class="text-3xl font-black text-green-500">' +
+                aprovados + '</span></div>' +
+                '<div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-sm flex flex-col justify-center items-center text-center"><span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Recuperação</span><span class="text-3xl font-black text-red-500">' +
+                recuperacao + '</span></div>' +
+                '<div class="gradient-card p-5 rounded-3xl shadow-sm flex flex-col justify-center items-center text-center text-white relative overflow-hidden">' +
+                '<i class="fas fa-trophy absolute opacity-20 -right-4 -bottom-4 text-6xl"></i>' +
+                '<span class="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-90 relative z-10">Melhor Aluno</span>' +
+                '<span class="text-sm font-black truncate w-full relative z-10">' + (melhor ? melhor.name.split(' ')[0] :
+                    '-') + '</span>' +
+                '<span class="text-[10px] opacity-80 mt-1 relative z-10">Média ' + (melhor ? melhor.gpa : 0) +
+                '</span></div></div>' +
+                '<div class="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 p-6 rounded-3xl flex items-start gap-4">' +
+                '<div class="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-full shrink-0"><i class="fas fa-sparkles text-2xl text-indigo-600 dark:text-indigo-400"></i></div>' +
+                '<div><h4 class="text-sm font-black text-indigo-900 dark:text-indigo-300 uppercase tracking-wider mb-2">Análise Pedagógica Automática</h4>' +
+                '<ul class="text-xs text-indigo-800 dark:text-indigo-200 space-y-2 font-medium">' +
+                '<li>• A turma apresenta dificuldade em <strong>Interpretação Textual</strong> nas últimas 2 avaliações.</li>' +
+                '<li>• Notou-se um índice de erro anormal na <strong>Questão 12</strong> (Sintaxe).</li>' +
+                '<li>• O aluno <strong>' + (melhor ? melhor.name : 'N/A') +
+                '</strong> demonstrou a maior evolução de aprendizagem este mês.</li>' +
+                '<li>• Taxa de aprovação: ' + Math.round((aprovados / (aprovados + recuperacao)) * 100) +
+                '%</li>' +
+                '</ul></div></div>' +
+                '<div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-sm">' +
+                '<h4 class="text-xs font-black tracking-widest text-gray-400 dark:text-gray-500 uppercase mb-6 flex items-center gap-2"><i class="fas fa-chart-bar"></i> Heatmap de Dificuldades (Por Questão)</h4>' +
+                '<div class="heatmap-grid">' + heatmapHtml +
+                '</div><div class="flex gap-4 mt-6 justify-center text-[10px] font-bold text-gray-400 uppercase">' +
+                '<span class="flex items-center gap-1"><div class="w-3 h-3 bg-red-500 rounded-sm"></div> Alto Índice de Erro</span>' +
+                '<span class="flex items-center gap-1"><div class="w-3 h-3 bg-yellow-500 rounded-sm"></div> Erro Médio</span>' +
+                '<span class="flex items-center gap-1"><div class="w-3 h-3 bg-green-500 rounded-sm"></div> Elevado Acerto</span>' +
+                '</div></div>' +
+                '<div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-sm">' +
+                '<h4 class="text-xs font-black tracking-widest text-gray-400 dark:text-gray-500 uppercase mb-4">Relatórios Individuais</h4>' +
+                '<div class="space-y-3">' + studentsListHtml + '</div></div></div></div>';
+        }
+
+        function selectStudentRelatorio(studentId) {
+            var cls = App.selectedClass;
+            if (cls) {
+                for (var i = 0; i < cls.students.length; i++) {
+                    if (cls.students[i].id === studentId) {
+                        App.selectedStudent = cls.students[i];
+                        App.selectedHistoricalTest = null;
+                        navigateTo('aluno-detalhe');
+                        return;
+                    }
+                }
+            }
+        }
+
+        function downloadReport() {
+            var cls = App.selectedClass;
+            if (!cls) return;
+
+            var content = 'RELATÓRIO DE DESEMPENHO: ' + cls.name + '\n\n';
+            content += 'Média Geral: ' + cls.average + '\n';
+            content += 'Presença Média: ' + cls.statistics.averageAttendance + '\n';
+            content += 'Total de Aulas: ' + (cls.totalAulas || 0) + '\n';
+            content += 'Pior Questão: ' + cls.statistics.worstQuestion + '\n';
+            content += 'Nota Mínima para Aprovação: ' + NOTA_MINIMA_APROVACAO + '\n\n';
+            content += 'Heatmap:\n';
+            for (var key in cls.statistics.heatmap) {
+                content += '  ' + key + ': ' + cls.statistics.heatmap[key] + '%\n';
+            }
+
+            var students = cls.students || [];
+            var aprovados = students.filter(function(s) { return s.gpa >= NOTA_MINIMA_APROVACAO; }).length;
+            var recuperacao = students.filter(function(s) { return s.gpa < NOTA_MINIMA_APROVACAO; }).length;
+            content += '\nAprovados: ' + aprovados + ' | Em Recuperação: ' + recuperacao + '\n\n';
+            content += 'ALUNOS:\n';
+            for (var i = 0; i < students.length; i++) {
+                var s = students[i];
+                var pres = calcularPresencaAluno(s, cls.totalAulas);
+                content += '  ' + s.name + ' | Média: ' + s.gpa + ' | Presença: ' + pres + '% | Faltas: ' + (s.faltas || 0);
+                content += s.gpa >= NOTA_MINIMA_APROVACAO ? ' | APROVADO\n' : ' | REPROVADO\n';
+            }
+
+            var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = 'Relatorio_' + cls.name.replace(/\s+/g, '_') + '.txt';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // ============================================================
+        // FUNÇÕES RESTANTES (Import, Scan, Confirm, Results, Compare, Tips, Charts, Discursive, AiResult)
+        // ============================================================
+
+        function renderImport() {
+            return '<div class="flex-1 flex flex-col bg-white dark:bg-slate-800 max-w-3xl mx-auto w-full">' +
+                renderSimpleHeader('Adicionar Gabarito Oficial') +
+                '<div class="flex-1 p-6 flex flex-col items-center justify-center">' +
+                '<div onclick="document.getElementById(\'importInput\').click()" class="w-full max-w-md p-8 border-4 border-dashed rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:bg-[#e8f1f1]/30 transition-all border-[#7aa2a1]">' +
+                '<div class="p-4 bg-[#e8f1f1] dark:bg-slate-700 rounded-full transition-transform mb-4"><i class="fas fa-upload text-5xl text-[#7aa2a1]"></i></div>' +
+                '<h2 class="text-xl font-black tracking-widest text-center uppercase text-[#7aa2a1] dark:text-[#a0c4c3]">Adicionar Gabarito do Professor</h2>' +
+                '<p class="text-gray-400 text-xs mt-2 text-center dark:text-gray-500">Selecione o ficheiro de imagem do gabarito oficial do dispositivo para comparação posterior.</p>' +
+                '</div><input type="file" id="importInput" class="hidden" accept="image/*" onchange="handleImportUpload(event)" />' +
+                '</div></div>';
+        }
+
+        function handleImportUpload(event) {
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onloadend = function() {
+                    App.officialGabarito = {
+                        dataUrl: reader.result,
+                        mimeType: file.type,
+                        base64: reader.result.split(',')[1]
+                    };
+                    App.mensagemToast = 'Gabarito importado com sucesso!';
+                    App.showSyncSuccess = true;
+                    render();
+                    setTimeout(function() {
+                        App.showSyncSuccess = false;
+                        navigateTo('dashboard');
+                    }, 1500);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ============================================================
+        // SCAN
+        // ============================================================
+        function renderScan() {
+            return '<div class="flex-1 flex flex-col bg-[#0a0a0a] text-white w-full max-w-4xl mx-auto">' +
+                '<div class="p-6 flex justify-between items-center bg-black/40">' +
+                '<button onclick="stopScan();navigateTo(\'dashboard\');" class="text-white hover:bg-white/10 p-2 rounded-full transition-colors"><i class="fas fa-arrow-left text-2xl"></i></button>' +
+                '<h2 class="text-sm font-bold tracking-widest uppercase">Digitalizar Gabarito do Aluno</h2><div class="w-10"></div>' +
+                '</div>' +
+                '<div class="flex-1 flex flex-col items-center justify-center p-6 relative">' +
+                '<h2 class="text-lg font-black tracking-widest text-center mb-6 text-white uppercase">APONTE O SCANNER PARA A PROVA DO ALUNO</h2>' +
+                '<div class="relative w-full max-w-sm aspect-[3/4] rounded-3xl overflow-hidden bg-black flex flex-col items-center justify-center border-4 border-[#7aa2a1]">' +
+                '<video id="scanVideo" autoplay playsinline class="w-full h-full object-cover"></video>' +
+                '<div class="scan-line"></div><div class="scan-overlay"></div></div>' +
+                '<canvas id="scanCanvas" class="hidden"></canvas>' +
+                '<div class="mt-8 flex flex-col items-center gap-4 w-full max-w-sm">' +
+                '<button onclick="captureScan()" id="captureBtn" class="w-20 h-20 bg-white border-8 border-gray-400/40 rounded-full hover:bg-gray-100 active:scale-95 transition-all flex items-center justify-center shadow-lg"><div class="w-10 h-10 bg-[#7aa2a1] rounded-full"></div></button>' +
+                '<div class="w-full flex items-center gap-3 py-2 text-gray-500"><div class="flex-1 h-px bg-gray-700"></div><span class="text-xs uppercase font-bold text-gray-400">Alternativa</span><div class="flex-1 h-px bg-gray-700"></div></div>' +
+                '<button onclick="document.getElementById(\'scanFallback\').click()" class="w-full py-3.5 bg-gray-800 border border-gray-700 text-white font-bold rounded-xl text-xs tracking-widest hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"><i class="fas fa-camera"></i> TIRAR FOTO OU CARREGAR FICHEIRO</button>' +
+                '<input type="file" id="scanFallback" class="hidden" accept="image/*" onchange="handleScanFallback(event)" />' +
+                '</div></div></div>';
+        }
+
+        function initScan() {
+            var video = document.getElementById('scanVideo');
+            if (video) {
+                startScan();
+            }
+        }
+
+        function startScan() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                    .then(function(stream) {
+                        App.scanStream = stream;
+                        var video = document.getElementById('scanVideo');
+                        if (video) {
+                            video.srcObject = stream;
+                        }
+                    })
+                    .catch(function(err) {
+                        console.warn('Câmara indisponível:', err);
+                    });
+            }
+        }
+
+        function stopScan() {
+            if (App.scanStream) {
+                App.scanStream.getTracks().forEach(function(track) { track.stop(); });
+                App.scanStream = null;
+            }
+        }
+
+        function captureScan() {
+            var video = document.getElementById('scanVideo');
+            var canvas = document.getElementById('scanCanvas');
+            if (video && canvas) {
+                var ctx = canvas.getContext('2d');
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                var dataUrl = canvas.toDataURL('image/jpeg');
+                stopScan();
+                App.studentGabarito = {
+                    dataUrl: dataUrl,
+                    mimeType: 'image/jpeg',
+                    base64: dataUrl.split(',')[1]
+                };
+                navigateTo('confirm');
+            }
+        }
+
+        function handleScanFallback(event) {
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onloadend = function() {
+                    App.studentGabarito = {
+                        dataUrl: reader.result,
+                        mimeType: file.type,
+                        base64: reader.result.split(',')[1]
+                    };
+                    stopScan();
+                    navigateTo('confirm');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ============================================================
+        // CONFIRM
+        // ============================================================
+        function renderConfirm() {
+            var image = App.studentGabarito;
+
+            return '<div class="flex-1 flex flex-col bg-black/95 relative max-w-3xl mx-auto w-full">' +
+                '<div class="p-6 flex justify-between z-10">' +
+                '<button onclick="navigateTo(\'dashboard\')" class="text-white hover:bg-white/10 p-2 rounded-full transition-colors"><i class="fas fa-arrow-left text-2xl"></i></button>' +
+                '<span class="text-white/60 font-bold text-sm tracking-widest self-center uppercase">Confirmar Captura do Aluno</span><div class="w-10"></div>' +
+                '</div>' +
+                '<div class="flex-1 flex flex-col items-center justify-center z-10 p-6">' +
+                '<div class="bg-white p-4 rounded-2xl shadow-2xl mb-8 max-w-sm w-full overflow-hidden">' +
+                (image && image.dataUrl ? '<img src="' + image.dataUrl +
+                    '" alt="Gabarito Capturado" class="w-full aspect-[3/4] object-contain rounded-lg" />' :
+                    '<div class="border border-gray-300 rounded-lg p-4 bg-white text-center text-gray-400">Nenhuma imagem capturada</div>') +
+                '</div>' +
+                (App.isConfirming ?
+                    '<div class="animate-spin rounded-full h-12 w-12 border-4 border-white/20 border-t-[#7aa2a1]"></div>' :
+                    '<div class="flex flex-col items-center cursor-pointer group" onclick="handleConfirm()">' +
+                    '<div class="bg-[#7aa2a1] rounded-full p-5 mb-3 shadow-lg group-hover:scale-105 transition-transform"><span class="text-white font-bold tracking-widest bg-[#7aa2a1] px-6 py-1.5 rounded-lg text-sm">CONFIRMAR?</span></div>' +
+                    '</div>') +
+                '</div></div>';
+        }
+
+        function handleConfirm() {
+            App.isConfirming = true;
+            render();
+            setTimeout(function() {
+                App.isConfirming = false;
+                navigateTo('results');
+            }, 1200);
+        }
+
+        // ============================================================
+        // RESULTS (Correção Automática)
+        // ============================================================
+        function renderResults() {
+            var hasOfficial = App.officialGabarito !== null;
+            var hasStudent = App.studentGabarito !== null;
+
+            var classOptions = '';
+            for (var ci = 0; ci < App.classes.length; ci++) {
+                classOptions += '<option value="' + App.classes[ci].id + '">' + App.classes[ci].name + '</option>';
+            }
+
+            var targetClass = null;
+            for (var i = 0; i < App.classes.length; i++) {
+                if (App.classes[i].id === App.selectedTargetClass) {
+                    targetClass = App.classes[i];
+                    break;
+                }
+            }
+            if (!targetClass) targetClass = { students: [] };
+
+            var studentOptions = '';
+            for (var si = 0; si < targetClass.students.length; si++) {
+                var s = targetClass.students[si];
+                studentOptions += '<option value="' + s.id + '">' + s.name + ' (Nº ' + s.number + ')</option>';
+            }
+
+            return '<div class="flex-1 flex flex-col bg-white dark:bg-slate-800 max-w-3xl mx-auto w-full">' +
+                renderSimpleHeader('Corrigir Automaticamente') +
+                '<div class="flex-1 p-6 flex flex-col justify-center items-center">' +
+                '<div class="w-full max-w-md bg-gray-50 dark:bg-slate-700 border dark:border-slate-600 rounded-3xl p-6 mb-6 text-left">' +
+                '<h3 class="font-bold text-gray-700 dark:text-slate-200 text-sm mb-4 uppercase tracking-wider flex items-center gap-2"><i class="fas fa-sync-alt text-[#7aa2a1]"></i> Envio e Direcionamento Automático</h3>' +
+                '<div class="space-y-4"><div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 block">Direcionar para a Turma:</label>' +
+                '<select class="w-full py-2.5 px-3 rounded-xl border dark:border-slate-600 bg-white dark:bg-slate-800 text-sm outline-none" onchange="App.selectedTargetClass=this.value;render();">' +
+                classOptions + '</select></div>' +
+                '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 block">Vincular ao Perfil do Aluno:</label>' +
+                '<select class="w-full py-2.5 px-3 rounded-xl border dark:border-slate-600 bg-white dark:bg-slate-800 text-sm outline-none" onchange="App.selectedTargetStudent=this.value">' +
+                studentOptions + '</select></div></div></div>' +
+
+                '<div class="w-full max-w-md bg-gray-50 dark:bg-slate-700 border dark:border-slate-600 rounded-2xl p-6 mb-6">' +
+                '<h3 class="font-bold text-gray-700 dark:text-slate-200 text-xs mb-4 uppercase tracking-wider">Estado das Imagens</h3>' +
+                '<div class="flex items-center justify-between mb-4 pb-3 border-b dark:border-slate-600">' +
+                '<span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">1. Gabarito Oficial (Docente)</span>' +
+                (hasOfficial ?
+                    '<span class="text-xs bg-green-100 text-green-700 font-bold px-3 py-1 rounded-full flex items-center gap-1"><i class="fas fa-check"></i> PRONTO</span>' :
+                    '<button onclick="navigateTo(\'import\')" class="text-xs bg-red-50 text-red-600 font-bold px-3 py-1 rounded-full border border-red-200 hover:bg-red-100">CARREGAR</button>') +
+                '</div><div class="flex items-center justify-between">' +
+                '<span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">2. Prova Digitalizada (Aluno)</span>' +
+                (hasStudent ?
+                    '<span class="text-xs bg-green-100 text-green-700 font-bold px-3 py-1 rounded-full flex items-center gap-1"><i class="fas fa-check"></i> PRONTO</span>' :
+                    '<div class="flex gap-2"><button onclick="navigateTo(\'scan\')" class="text-[10px] bg-gray-100 dark:bg-slate-600 text-gray-700 dark:text-slate-300 font-bold px-2 py-1 rounded-lg">DIGITALIZAR</button><button onclick="document.getElementById(\'studentResultInput\').click()" class="text-[10px] bg-gray-100 dark:bg-slate-600 text-gray-700 dark:text-slate-300 font-bold px-2 py-1 rounded-lg">FOTO</button></div>') +
+                '</div><input type="file" id="studentResultInput" class="hidden" accept="image/*" onchange="handleStudentResultUpload(event)" /></div>' +
+
+                (App.errorMsg ?
+                    '<div class="text-red-500 text-xs font-bold bg-red-50 p-4 rounded-xl border border-red-200 max-w-md mb-6 leading-relaxed">' +
+                    App.errorMsg + '</div>' : '') +
+
+                '<div class="w-full max-w-md flex flex-col gap-3">' +
+                '<button onclick="handleAiCorrection()" ' +
+                ((App.isLoading || !hasOfficial || !hasStudent) ? 'disabled' : '') +
+                ' class="w-full py-4 rounded-xl font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-all ' +
+                ((App.isLoading || !hasOfficial || !hasStudent) ?
+                    'bg-gray-300 cursor-not-allowed text-gray-500 dark:bg-slate-700' :
+                    'bg-[#7aa2a1] hover:bg-[#688f8e] active:scale-95') +
+                '">' +
+                (App.isLoading ? '<i class="fas fa-sync-alt animate-spin"></i> A CORRIGIR E A SINCRONIZAR...' :
+                    '<i class="fas fa-check-circle"></i> INICIAR CORREÇÃO & SINCRONIZAR') +
+                '</button></div></div></div>';
+        }
+
+        function handleStudentResultUpload(event) {
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onloadend = function() {
+                    App.studentGabarito = {
+                        dataUrl: reader.result,
+                        mimeType: file.type,
+                        base64: reader.result.split(',')[1]
+                    };
+                    render();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleAiCorrection() {
+            if (!App.officialGabarito) {
+                App.errorMsg = 'ERRO: Carregue primeiro o Gabarito Oficial do Professor.';
+                render();
+                return;
+            }
+            if (!App.studentGabarito) {
+                App.errorMsg = 'ERRO: Digitalize ou carregue a prova do Aluno.';
+                render();
+                return;
+            }
+
+            App.isLoading = true;
+            App.errorMsg = '';
+            render();
+
+            // Simular correção
+            setTimeout(function() {
+                var grade = (Math.random() * 4 + 6);
+                var correctCount = Math.floor(Math.random() * 10) + 10;
+                var wrongCount = 20 - correctCount;
+
+                var result = {
+                    studentName: "Aluno",
+                    grade: grade.toFixed(1),
+                    correctCount: correctCount,
+                    wrongCount: wrongCount,
+                    mainDifficulty: 'Interpretação de Texto',
+                    tipsList: [
+                        { title: "Revisão de Conteúdo", desc: "Praticar mais exercícios de interpretação textual." },
+                        { title: "Exercícios Complementares", desc: "Resolver questões de provas anteriores." }
+                    ]
+                };
+
+                App.lastCorrectionData = result;
+                App.aiResult =
+                    '***Avaliação Pedagógica de Teste***\n\n**Aluno:** Aluno\n**Nota Obtida:** ' + result.grade +
+                    '/10\n\n**Análise do Professor:**\n **Pontos Positivos:** O aluno demonstra bom entendimento do conteúdo.\n **Melhoria sugerida:** O aluno deve praticar mais exercícios de interpretação.\n **Competências Desenvolvidas:** Capacidade de análise e organização textual.\n\n*Recomendações:*\n- Praticar a escrita de textos mais elaborados\n- Revisar a estrutura de parágrafos\n- Ampliar repertório de conectivos';
+
+                // Atualizar o aluno se selecionado
+                var studentId = App.selectedTargetStudent;
+                var classId = App.selectedTargetClass;
+
+                if (studentId && classId) {
+                    for (var ci = 0; ci < App.classes.length; ci++) {
+                        if (App.classes[ci].id === classId) {
+                            for (var si = 0; si < App.classes[ci].students.length; si++) {
+                                if (App.classes[ci].students[si].id === studentId) {
+                                    var student = App.classes[ci].students[si];
+                                    var newTest = {
+                                        id: 'sync-' + Date.now(),
+                                        title: 'Correção Automática',
+                                        grade: parseFloat(result.grade),
+                                        date: new Date().toLocaleDateString('pt-PT'),
+                                        correct: result.correctCount,
+                                        wrong: result.wrongCount,
+                                        details: getRandomDetails(20)
+                                    };
+                                    student.history = student.history || [];
+                                    student.history.push(newTest);
+                                    updateStudentStats(student);
+
+                                    // Recalcular média da turma
+                                    var totalGpa = 0;
+                                    for (var sj = 0; sj < App.classes[ci].students.length; sj++) {
+                                        totalGpa += App.classes[ci].students[sj].gpa || 0;
+                                    }
+                                    App.classes[ci].average = App.classes[ci].students.length > 0 ?
+                                        parseFloat((totalGpa / App.classes[ci].students.length).toFixed(1)) : 0;
+                                    App.classes[ci].statistics = calcularEstatisticasTurma(App.classes[ci].students,
+                                        App.classes[ci].totalAulas || 0);
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                App.isLoading = false;
+                App.mensagemToast = 'Correção realizada com sucesso! Nota: ' + result.grade;
+                App.showSyncSuccess = true;
+                render();
+                setTimeout(function() {
+                    App.showSyncSuccess = false;
+                    navigateTo('tips');
+                }, 2000);
+            }, 1500);
+        }
+
+        // ============================================================
+        // COMPARE
+        // ============================================================
+        function renderCompare() {
+            var hasOfficial = App.officialGabarito !== null;
+            var hasStudent = App.studentGabarito !== null;
+
+            return '<div class="flex-1 flex flex-col bg-white dark:bg-slate-800 max-w-4xl mx-auto w-full">' +
+                renderSimpleHeader('Comparação de Imagens') +
+                '<div class="flex-1 p-6 flex flex-col md:flex-row gap-6 justify-center">' +
+                '<div class="flex-1 bg-white dark:bg-slate-800 p-6 shadow-md rounded-2xl flex flex-col items-center">' +
+                '<h3 class="font-bold text-xs mb-4 uppercase text-[#7aa2a1] border-b w-full text-center pb-2">GABARITO DO DOCENTE</h3>' +
+                (hasOfficial ? '<img src="' + App.officialGabarito.dataUrl +
+                    '" alt="Gabarito do Professor" class="w-full max-h-[400px] object-contain rounded-lg border shadow-sm">' :
+                    '<div class="flex-1 flex flex-col items-center justify-center text-gray-300 p-8 border-2 border-dashed rounded-xl w-full min-h-[250px]"><i class="fas fa-image text-5xl mb-2"></i><p class="text-xs font-bold text-center">Nenhum gabarito oficial adicionado.</p></div>') +
+                '</div>' +
+                '<div class="flex-1 bg-white dark:bg-slate-800 p-6 shadow-md rounded-2xl flex flex-col items-center">' +
+                '<h3 class="font-bold text-xs mb-4 uppercase text-[#7aa2a1] border-b w-full text-center pb-2">GABARITO DO ALUNO</h3>' +
+                (hasStudent ? '<img src="' + App.studentGabarito.dataUrl +
+                    '" alt="Gabarito do Aluno" class="w-full max-h-[400px] object-contain rounded-lg border shadow-sm">' :
+                    '<div class="flex-1 flex flex-col items-center justify-center text-gray-300 p-8 border-2 border-dashed rounded-xl w-full min-h-[250px]"><i class="fas fa-qrcode text-5xl mb-2"></i><p class="text-xs font-bold text-center">Nenhuma imagem do aluno adicionada.</p></div>') +
+                '</div></div></div>';
+        }
+
+        // ============================================================
+        // TIPS
+        // ============================================================
+        function renderTips() {
+            var data = App.lastCorrectionData || {
+                studentName: 'Aluno',
+                grade: 0,
+                mainDifficulty: 'Aguardando correção',
+                tipsList: [
+                    { title: "1. Realize uma correção", desc: "Use a ferramenta de correção automática para gerar recomendações." },
+                    { title: "2. Analise os resultados", desc: "Verifique os pontos fortes e áreas que precisam de melhoria." },
+                    { title: "3. Aplique as sugestões", desc: "Utilize as recomendações para melhorar o desempenho." }
+                ]
+            };
+
+            var tipsHtml = '';
+            for (var i = 0; i < data.tipsList.length; i++) {
+                tipsHtml += '<div class="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-xl border border-gray-100 dark:border-slate-600">' +
+                    '<h4 class="font-bold text-gray-800 dark:text-white mb-1">' + data.tipsList[i].title +
+                    '</h4><p class="text-gray-600 dark:text-slate-400">' + data.tipsList[i].desc +
+                    '</p></div>';
+            }
+
+            return '<div class="flex-1 flex flex-col bg-white dark:bg-slate-800 max-w-3xl mx-auto w-full">' +
+                '<div class="flex items-center justify-between p-6 bg-white dark:bg-slate-800 border-b dark:border-slate-700 sticky top-0 z-10">' +
+                '<button onclick="navigateTo(\'dashboard\')" class="text-gray-400 hover:text-black dark:hover:text-white transition-colors"><i class="fas fa-arrow-left text-2xl"></i></button>' +
+                renderLogo('w-10 h-10') +
+                renderLogoText() +
+                '<div class="w-6"></div></div>' +
+                '<div class="p-6 overflow-y-auto">' +
+                '<div class="bg-yellow-50/50 dark:bg-slate-900 border border-yellow-200 dark:border-slate-700 rounded-2xl p-6 mb-8 text-center">' +
+                '<h2 class="text-sm font-bold text-yellow-800 dark:text-yellow-400 uppercase tracking-wider leading-relaxed">Identificámos que o aluno(a) <strong class="text-black dark:text-white">' +
+                data.studentName + '</strong> está a apresentar maiores dificuldades em <strong class="text-black dark:text-white">' +
+                data.mainDifficulty + '</strong>.</h2></div>' +
+                '<h3 class="text-gray-400 font-bold text-xs uppercase mb-4 tracking-widest flex items-center gap-2"><i class="fas fa-lightbulb text-sm"></i> Recomendações Práticas</h3>' +
+                '<div class="space-y-6 text-sm text-gray-700 dark:text-slate-300">' + tipsHtml + '</div>' +
+                '<div class="mt-10 mb-8 flex justify-center"><button onclick="downloadTips()" class="bg-[#7aa2a1] text-white px-8 py-3.5 rounded-xl text-xs font-bold tracking-widest shadow hover:bg-[#688f8e] transition-colors flex items-center gap-2"><i class="fas fa-download"></i> EXPORTAR DIRETRIZES EM FICHEIRO</button></div>' +
+                '</div></div>';
+        }
+
+        function downloadTips() {
+            var data = App.lastCorrectionData || {
+                studentName: 'Aluno',
+                grade: 0,
+                mainDifficulty: 'Aguardando correção',
+                tipsList: [
+                    { title: "1. Realize uma correção", desc: "Use a ferramenta de correção automática para gerar recomendações." },
+                    { title: "2. Analise os resultados", desc: "Verifique os pontos fortes e áreas que precisam de melhoria." },
+                    { title: "3. Aplique as sugestões", desc: "Utilize as recomendações para melhorar o desempenho." }
+                ]
+            };
+
+            var content = '===============================\n';
+            content += 'AUTOMATIC CORRECTION - DIRETRIZES\n';
+            content += '===============================\n\n';
+            content += 'ALUNO: ' + data.studentName + '\n';
+            content += 'NOTA: ' + data.grade + '/10\n\n';
+            content += 'RECOMENDAÇÕES:\n';
+            for (var i = 0; i < data.tipsList.length; i++) {
+                content += '  ' + data.tipsList[i].title + '\n' + data.tipsList[i].desc + '\n\n';
+            }
+
+            var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = 'Sugestoes_' + data.studentName.replace(/\s+/g, '_') + '.txt';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // ============================================================
+        // CHARTS
+        // ============================================================
+        function renderCharts() {
+            var data = App.lastCorrectionData || {
+                studentName: 'Aluno',
+                grade: 0,
+                performanceDetails: [
+                    { label: 'Interpretação', val1: 0, val2: 0, val3: 0 },
+                    { label: 'Gramática', val1: 0, val2: 0, val3: 0 },
+                    { label: 'Pontuação', val1: 0, val2: 0, val3: 0 },
+                    { label: 'Escrita', val1: 0, val2: 0, val3: 0 }
+                ]
+            };
+
+            var barsHtml = '';
+            for (var i = 0; i < data.performanceDetails.length; i++) {
+                var item = data.performanceDetails[i];
+                barsHtml +=
+                    '<div class="flex flex-col items-center w-16 group relative">' +
+                    '<div class="w-full flex flex-col-reverse justify-start" style="height:120px;">' +
+                    '<div class="w-full bg-[#3d5a5a] rounded-t" style="height:' + (item.val3 * 1.2) +
+                    'px; min-height:4px;"></div>' +
+                    '<div class="w-full bg-[#5c8080]" style="height:' + (item.val2 * 1.2) +
+                    'px; min-height:4px;"></div>' +
+                    '<div class="w-full bg-[#82a9a8] rounded-t" style="height:' + (item.val1 * 1.2) +
+                    'px; min-height:4px;"></div></div>' +
+                    '<span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 text-center mt-3 absolute bottom-[-45px] leading-tight group-hover:text-black dark:group-hover:text-white">' +
+                    item.label + '</span></div>';
+            }
+
+            return '<div class="flex-1 flex flex-col bg-white dark:bg-slate-800 max-w-3xl mx-auto w-full">' +
+                '<div class="p-6 border-b dark:border-slate-700"><button onclick="navigateTo(\'dashboard\')" class="w-10 h-10 rounded-full border border-gray-200 dark:border-slate-700 flex items-center justify-center text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"><i class="fas fa-arrow-left text-xl"></i></button></div>' +
+                '<div class="flex-1 p-6 md:p-10">' +
+                '<h2 class="text-2xl font-black text-gray-700 dark:text-slate-100 uppercase flex items-center gap-2"><i class="fas fa-chart-bar text-2xl"></i> Gráficos de Evolução</h2>' +
+                '<h3 class="text-md font-bold text-gray-400 mb-12">Aluno: ' + data.studentName + '</h3>' +
+                '<div class="relative h-72 border-l-2 border-b-2 border-gray-300 dark:border-slate-600 ml-10 mb-20 flex items-end justify-around pb-2" style="padding-left:0;">' +
+                '<div class="absolute -left-10 top-0 h-full flex flex-col justify-between text-[11px] text-gray-400 py-1 font-bold"><span>100%</span><span>80%</span><span>60%</span><span>40%</span><span>20%</span><span>0%</span></div>' +
+                barsHtml +
+                '</div><div class="flex justify-center gap-6 mt-16 text-xs font-bold text-gray-500">' +
+                '<div class="flex items-center gap-2"><div class="w-4 h-4 bg-[#82a9a8] rounded"></div> Acertos</div>' +
+                '<div class="flex items-center gap-2"><div class="w-4 h-4 bg-[#5c8080] rounded"></div> Parciais</div>' +
+                '<div class="flex items-center gap-2"><div class="w-4 h-4 bg-[#3d5a5a] rounded"></div> Erros</div>' +
+                '</div></div></div>';
+        }
+
+        // ============================================================
+        // DISCURSIVE
+        // ============================================================
+        function renderDiscursive() {
+            var hasOfficial = App.localOfficial !== null;
+            var hasStudent = App.studentAnswer !== null;
+
+            return '<div class="flex-1 flex flex-col bg-white dark:bg-slate-800 max-w-3xl mx-auto w-full">' +
+                renderSimpleHeader('Correção Discursiva com IA') +
+                '<div class="flex-1 p-6 md:p-8 flex flex-col gap-6 overflow-y-auto">' +
+                '<p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-md mx-auto">Compare redações e respostas livres contra o gabarito oficial de correção em segundos com o motor Gemini de Visão.</p>' +
+                '<div class="grid md:grid-cols-2 gap-6">' +
+                '<div class="bg-white dark:bg-slate-700 p-6 rounded-3xl border border-gray-100 dark:border-slate-600 shadow-sm flex flex-col justify-between relative overflow-hidden">' +
+                '<div class="absolute top-0 left-0 w-2 h-full bg-[#7aa2a1]"></div>' +
+                '<h3 class="font-bold text-gray-800 dark:text-white text-sm mb-3 pl-2 flex items-center gap-2"><i class="fas fa-check-circle text-[#7aa2a1]"></i> 1. Gabarito de Correção</h3>' +
+                '<input type="file" accept="image/*" class="hidden" id="discursiveOfficial" onchange="handleDiscursiveOfficial(event)" />' +
+                (hasOfficial ?
+                    '<div class="relative w-full h-44 rounded-xl overflow-hidden border dark:border-slate-600"><img src="' +
+                    App.localOfficial.dataUrl +
+                    '" alt="Gabarito" class="w-full h-full object-cover" /><button onclick="App.localOfficial=null;render();" class="absolute top-2.5 right-2.5 bg-red-500 text-white p-1.5 rounded-full shadow hover:bg-red-600 transition-colors"><i class="fas fa-times"></i></button></div>' :
+                    '<button onclick="document.getElementById(\'discursiveOfficial\').click()" class="w-full flex-1 min-h-44 bg-[#e8f1f1] dark:bg-slate-600/50 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:opacity-80 transition-opacity"><i class="fas fa-upload text-3xl mb-2 text-[#7aa2a1]"></i><span class="text-xs font-bold uppercase tracking-wider text-[#7aa2a1]">Carregar Gabarito</span></button>') +
+                '</div>' +
+                '<div class="bg-white dark:bg-slate-700 p-6 rounded-3xl border border-gray-100 dark:border-slate-600 shadow-sm flex flex-col justify-between relative overflow-hidden">' +
+                '<div class="absolute top-0 left-0 w-2 h-full bg-[#7aa2a1]"></div>' +
+                '<h3 class="font-bold text-gray-800 dark:text-white text-sm mb-3 pl-2 flex items-center gap-2"><i class="fas fa-qrcode text-[#7aa2a1]"></i> 2. Resposta do Aluno</h3>' +
+                '<input type="file" accept="image/*" class="hidden" id="discursiveStudent" onchange="handleDiscursiveStudent(event)" />' +
+                (hasStudent ?
+                    '<div class="relative w-full h-44 rounded-xl overflow-hidden border dark:border-slate-600"><img src="' +
+                    App.studentAnswer.dataUrl +
+                    '" alt="Aluno" class="w-full h-full object-cover" /><button onclick="App.studentAnswer=null;render();" class="absolute top-2.5 right-2.5 bg-red-500 text-white p-1.5 rounded-full shadow hover:bg-red-600 transition-colors"><i class="fas fa-times"></i></button></div>' :
+                    '<button onclick="document.getElementById(\'discursiveStudent\').click()" class="w-full flex-1 min-h-44 bg-[#e8f1f1] dark:bg-slate-600/50 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:opacity-80 transition-opacity"><i class="fas fa-upload text-3xl mb-2 text-[#7aa2a1]"></i><span class="text-xs font-bold uppercase tracking-wider text-[#7aa2a1]">Carregar Prova</span></button>') +
+                '</div></div>' +
+                (App.errorMsg ?
+                    '<div class="text-red-500 text-xs text-center font-bold bg-red-50 dark:bg-red-950/20 p-3 rounded-xl border border-red-100 dark:border-red-900">' +
+                    App.errorMsg + '</div>' : '') +
+                '<div class="mt-auto pt-6 flex justify-center"><button onclick="handleDiscursiveAnalyze()" ' +
+                (App.isAnalyzing ? 'disabled' : '') +
+                ' class="w-full max-w-md py-4 rounded-xl font-bold text-white shadow-md flex items-center justify-center gap-2 transition-all ' +
+                (App.isAnalyzing ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#7aa2a1] hover:bg-[#688f8e] active:scale-95') +
+                '">' +
+                (App.isAnalyzing ? '<i class="fas fa-sync-alt animate-spin"></i> A analisar Redação...' :
+                    '<i class="fas fa-lightbulb"></i> Realizar Correção por IA') +
+                '</button></div></div></div>';
+        }
+
+        function handleDiscursiveOfficial(event) {
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onloadend = function() {
+                    App.localOfficial = {
+                        dataUrl: reader.result,
+                        mimeType: file.type,
+                        base64: reader.result.split(',')[1]
+                    };
+                    render();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleDiscursiveStudent(event) {
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onloadend = function() {
+                    App.studentAnswer = {
+                        dataUrl: reader.result,
+                        mimeType: file.type,
+                        base64: reader.result.split(',')[1]
+                    };
+                    render();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleDiscursiveAnalyze() {
+            if (!App.localOfficial || !App.studentAnswer) {
+                App.errorMsg = 'Por favor, certifique-se de que o gabarito oficial e a prova do aluno estão carregados.';
+                render();
+                return;
+            }
+
+            App.errorMsg = '';
+            App.isAnalyzing = true;
+            render();
+
+            setTimeout(function() {
+                App.aiResult =
+                    '***Avaliação Pedagógica de Teste Discursivo***\n\n**Aluno:** Aluno\n**Nota Obtida:** 7.5/10\n\n**Análise do Professor:**\n **Pontos Positivos:** O aluno demonstra bom entendimento do conteúdo.\n **Melhoria sugerida:** O aluno deve praticar mais exercícios de interpretação.\n **Competências Desenvolvidas:** Capacidade de análise e organização textual.\n\n*Recomendações:*\n- Praticar a escrita de textos mais elaborados\n- Revisar a estrutura de parágrafos\n- Ampliar repertório de conectivos';
+                App.isAnalyzing = false;
+                navigateTo('ai_result');
+            }, 2000);
+        }
+
+        // ============================================================
+        // AI RESULT
+        // ============================================================
+        function renderAiResult() {
+            var result = App.aiResult || 'Nenhum resultado disponível.';
+            var paragraphs = result.split('\n');
+            var html = '';
+            for (var i = 0; i < paragraphs.length; i++) {
+                var p = paragraphs[i];
+                if (!p.trim()) continue;
+
+                var line = '<p class="mb-3 text-sm text-gray-700 dark:text-slate-300 leading-relaxed">';
+
+                // Processar formatação
+                var parts = p.split(/(\*\*\*[^*]+\*\*|\*\*[^*]+\*\*)/g);
+                for (var j = 0; j < parts.length; j++) {
+                    var part = parts[j];
+                    if (part && part.startsWith('***') && part.endsWith('***')) {
+                        line += '<strong class="text-gray-900 dark:text-white font-bold text-base">' + part.slice(3, -3) +
+                            '</strong>';
+                    } else if (part && part.startsWith('**') && part.endsWith('**')) {
+                        var content = part.slice(2, -2);
+                        if (content.startsWith(' ')) content = content.slice(1);
+                        if (content.startsWith('- ')) {
+                            line += '<span class="flex gap-2 pl-2"><span class="text-[#7aa2a1]">•</span>' + content.slice(2) +
+                                '</span>';
+                        } else {
+                            line += '<strong class="text-gray-800 dark:text-gray-200">' + content + '</strong>';
+                        }
+                    } else {
+                        line += part || '';
+                    }
+                }
+                line += '</p>';
+                html += line;
+            }
+
+            return '<div class="min-h-full flex flex-col bg-white dark:bg-slate-800 max-w-3xl mx-auto w-full transition-colors">' +
+                renderSimpleHeader('Resultado da Avaliação por IA') +
+                '<div class="flex-1 p-6 overflow-y-auto">' +
+                '<div class="bg-[#e8f1f1] dark:bg-slate-700/50 p-6 rounded-2xl shadow-inner border dark:border-slate-600">' +
+                '<div class="flex items-center gap-3 mb-6 border-b dark:border-slate-600 pb-4">' +
+                '<div class="w-10 h-10 bg-white dark:bg-slate-700 rounded-full flex items-center justify-center shadow-sm">' +
+                renderLogo('w-6 h-6') +
+                '</div>' +
+                '<span class="text-sm font-black text-gray-700 dark:text-slate-200">Relatório Gerado por IA</span>' +
+                '</div>' +
+                '<div class="prose prose-sm max-w-none">' + html + '</div></div>' +
+                '<button onclick="navigateTo(\'dashboard\')" class="mt-8 w-full btn-solid flex items-center justify-center gap-2"><i class="fas fa-check-circle"></i> Voltar ao Painel</button>' +
+                '</div></div>';
+        }
+
+        // ============================================================
+        // APLICAR PROVA
+        // ============================================================
+        function renderAplicarProva() {
+            var cls = App.selectedClass;
+            if (!cls) return '<div class="p-8 text-center">Selecione uma turma</div>';
+
+            var students = cls.students || [];
+            if (students.length === 0) {
+                return '<div class="flex-1 flex flex-col bg-white dark:bg-slate-900 p-8">' +
+                    renderSimpleHeader('Central de Correção') +
+                    '<div class="flex-1 flex items-center justify-center"><div class="text-center"><i class="fas fa-exclamation-triangle text-5xl text-yellow-500 mb-4"></i><p class="font-bold text-gray-600 dark:text-gray-300">Esta turma não tem alunos cadastrados.</p><button onclick="navigateTo(\'salas\')" class="mt-4 btn-solid max-w-xs">Voltar</button></div></div></div>';
+            }
+
+            var step = App.scanStep || 1;
+            if (!App.currentStudentId && students.length > 0) {
+                App.currentStudentId = students[0].id;
+            }
+
+            var steps = [
+                { label: 'Configurar', step: 1 },
+                { label: 'Gabarito', step: 2 },
+                { label: 'Aplicar', step: 3 }
+            ];
+
+            var stepHtml = '';
+            for (var si = 0; si < steps.length; si++) {
+                var s = steps[si];
+                var isActive = step >= s.step;
+                var circleClass = isActive ? 'active' : 'inactive';
+                var labelClass = isActive ? 'active' : 'inactive';
+                var icon = step > s.step ? '<i class="fas fa-check"></i>' : s.step;
+                stepHtml += '<div class="step"><div class="circle ' + circleClass + '">' + icon +
+                    '</div><span class="label ' + labelClass + '">' + s.label + '</span></div>';
+            }
+
+            var contentHtml = '';
+
+            if (step === 1) {
+                contentHtml =
+                    '<div class="space-y-4 animate-fade-in"><h3 class="text-xl font-black text-gray-800 dark:text-white mb-6 text-center">Criar Nova Prova</h3>' +
+                    '<div class="bg-gray-50 dark:bg-slate-800 p-6 rounded-3xl border border-gray-100 dark:border-slate-700 space-y-4 shadow-sm">' +
+                    '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Nome da Avaliação</label><input type="text" class="input-style" value="' +
+                    App.testDetails.name + '" onchange="App.testDetails.name=this.value" /></div>' +
+                    '<div class="grid grid-cols-2 gap-4"><div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Disciplina</label><input type="text" class="input-style" value="' +
+                    App.testDetails.subject + '" onchange="App.testDetails.subject=this.value" /></div>' +
+                    '<div><label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 block">Qtd. Questões</label><input type="number" class="input-style" value="' +
+                    App.testDetails.qCount + '" onchange="App.testDetails.qCount=parseInt(this.value)||20" /></div></div></div>' +
+                    '<button onclick="App.scanStep=2;render();" class="btn-solid mt-4 h-14 text-sm tracking-widest shadow-md hover:shadow-lg">CONTINUAR</button></div>';
+            } else if (step === 2) {
+                var hasOfficial = App.officialGabarito !== null;
+                contentHtml =
+                    '<div class="space-y-4 animate-fade-in flex flex-col h-full justify-center">' +
+                    '<h3 class="text-xl font-black text-gray-800 dark:text-white mb-2 text-center">Gabarito do Professor</h3>' +
+                    '<p class="text-xs text-gray-500 text-center mb-6">Carregue a folha de respostas oficial para o sistema usar como base nas correções automáticas.</p>' +
+                    '<div onclick="' + (!hasOfficial ? "document.getElementById('officialInput').click()" :
+                        '') + '" class="w-full aspect-video border-4 border-dashed rounded-3xl flex flex-col items-center justify-center cursor-pointer transition-all ' +
+                    (hasOfficial ? 'border-green-500 bg-green-50 dark:bg-green-900/20' :
+                        'border-[#7aa2a1] bg-[#e8f1f1]/30 hover:bg-[#e8f1f1]') + '">' +
+                    (hasOfficial ?
+                        '<div class="text-center text-green-600 dark:text-green-400"><i class="fas fa-check-circle text-6xl mx-auto mb-2"></i><p class="font-black uppercase tracking-wider">Gabarito Registado</p><button onclick="event.stopPropagation();App.officialGabarito=null;render();" class="text-xs mt-4 underline text-gray-500">Alterar Imagem</button></div>' :
+                        '<i class="fas fa-upload text-5xl text-[#7aa2a1] mb-4"></i><p class="font-bold text-[#7aa2a1] uppercase tracking-widest text-sm">Importar Gabarito</p>') +
+                    '</div><input type="file" id="officialInput" class="hidden" accept="image/*" onchange="handleOfficialUpload(event)" />' +
+                    '<div class="flex gap-4 mt-8"><button onclick="App.scanStep=1;render();" class="py-4 px-6 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-300 font-bold rounded-xl text-sm">VOLTAR</button>' +
+                    '<button onclick="App.scanStep=3;render();" ' + (!hasOfficial ? 'disabled' : '') +
+                    ' class="flex-1 py-4 font-bold rounded-xl text-white shadow-md text-sm tracking-widest ' +
+                    (hasOfficial ? 'bg-[#7aa2a1] hover:bg-[#688f8e]' :
+                        'bg-gray-300 dark:bg-slate-600 cursor-not-allowed') +
+                    '">AVANÇAR</button></div></div>';
+            } else if (step === 3) {
+                var hasStudentScan = App.studentScan !== null;
+                var studentOptions = '';
+                for (var si2 = 0; si2 < students.length; si2++) {
+                    studentOptions += '<option value="' + students[si2].id + '">' + students[si2].name + ' (Nº ' + students[
+                        si2].number + ')</option>';
+                }
+
+                contentHtml =
+                    '<div class="space-y-4 animate-fade-in flex flex-col h-full">' +
+                    '<div class="bg-indigo-50 dark:bg-indigo-950/30 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900 mb-2 flex items-center justify-between">' +
+                    '<div><h4 class="text-xs font-black text-indigo-900 dark:text-indigo-300 uppercase">A Aplicar na Turma</h4><p class="text-lg font-black text-indigo-700 dark:text-indigo-400">' +
+                    cls.name + '</p></div>' +
+                    '<div class="bg-white dark:bg-slate-800 p-2 rounded-xl text-center shadow-sm"><span class="text-[10px] font-bold text-gray-400 block uppercase">Prova</span><span class="text-xs font-black text-gray-800 dark:text-white">' +
+                    App.testDetails.name + '</span></div></div>' +
+                    '<div class="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-sm flex-1 flex flex-col">' +
+                    '<label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 block uppercase tracking-widest">1. Selecionar Aluno</label>' +
+                    '<select class="w-full p-4 rounded-xl border dark:border-slate-600 bg-gray-50 dark:bg-slate-700 text-sm font-bold text-gray-700 dark:text-white outline-none mb-6 shadow-inner" onchange="App.currentStudentId=this.value">' +
+                    studentOptions +
+                    '</select>' +
+                    '<label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 block uppercase tracking-widest">2. Digitalizar Prova</label>' +
+                    (hasStudentScan ?
+                        '<div class="relative w-full flex-1 min-h-[150px] border-2 border-gray-200 dark:border-slate-600 rounded-2xl overflow-hidden mb-6 flex items-center justify-center bg-gray-100 dark:bg-slate-900">' +
+                        '<img src="' + App.studentScan +
+                        '" class="w-full h-full object-contain opacity-50" />' +
+                        '<div class="absolute inset-0 flex items-center justify-center"><i class="fas fa-check-circle text-6xl text-[#7aa2a1] bg-white rounded-full"></i></div>' +
+                        '<button onclick="App.studentScan=null;render();" class="absolute top-2 right-2 bg-gray-800/50 text-white p-2 rounded-full hover:bg-red-500 transition-colors"><i class="fas fa-times"></i></button></div>' :
+                        '<div class="grid grid-cols-2 gap-3 mb-6 flex-1 min-h-[150px]">' +
+                        '<button onclick="document.getElementById(\'studentInput\').click()" class="flex flex-col items-center justify-center bg-[#e8f1f1] dark:bg-slate-700 rounded-2xl text-[#7aa2a1] dark:text-[#a0c4c3] hover:bg-[#d0e1e1] dark:hover:bg-slate-600 transition-colors border border-transparent shadow-sm"><i class="fas fa-camera text-3xl mb-2"></i><span class="text-[10px] font-black uppercase tracking-wider">Câmara / Foto</span></button>' +
+                        '<button onclick="document.getElementById(\'studentInput\').click()" class="flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-700 rounded-2xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors border border-gray-200 dark:border-slate-600 shadow-sm"><i class="fas fa-file text-3xl mb-2"></i><span class="text-[10px] font-black uppercase tracking-wider">Importar PDF/IMG</span></button>' +
+                        '<input type="file" id="studentInput" class="hidden" accept="image/*,.pdf" onchange="handleStudentUpload(event)" /></div>') +
+                    '<button onclick="handleCorrectionAndSync()" ' + ((!hasStudentScan || App.isProcessing) ?
+                        'disabled' : '') +
+                    ' class="w-full py-4 rounded-xl font-black text-white shadow-lg flex items-center justify-center gap-2 transition-all text-sm tracking-widest ' +
+                    ((!hasStudentScan || App.isProcessing) ?
+                        'bg-gray-300 dark:bg-slate-600 cursor-not-allowed' :
+                        'bg-gradient-to-r from-green-500 to-emerald-600 hover:scale-[1.02] active:scale-95') +
+                    '">' +
+                    (App.isProcessing ?
+                        '<i class="fas fa-sync-alt animate-spin"></i> A CORRIGIR E SINCRONIZAR...' :
+                        '<i class="fas fa-sparkles"></i> CORRIGIR & GUARDAR NO PERFIL') +
+                    '</button></div>' +
+                    '<button onclick="App.scanStep=2;render();" class="text-xs text-gray-400 font-bold uppercase tracking-widest text-center hover:text-[#7aa2a1] mt-2">Voltar à Configuração</button></div>';
+            }
+
+            return '<div class="flex-1 flex flex-col bg-white dark:bg-slate-900 w-full transition-colors overflow-hidden">' +
+                '<div class="flex items-center justify-between p-6 border-b dark:border-slate-700 sticky top-0 z-10 bg-white dark:bg-slate-900">' +
+                '<button onclick="navigateTo(\'salas\')" class="text-gray-400 hover:text-[#7aa2a1] transition-colors"><i class="fas fa-arrow-left text-2xl"></i></button>' +
+                '<h2 class="text-lg font-black text-gray-800 dark:text-white uppercase tracking-wider">Central de Correção</h2><div class="w-6"></div></div>' +
+                '<div class="p-6 overflow-y-auto flex-1 flex flex-col items-center">' +
+                '<div class="step-indicator">' + stepHtml +
+                '<div class="progress-bar"><div class="fill" style="width:' + (step === 1 ? '0%' : step === 2 ? '50%' :
+                    '100%') + '"></div></div></div>' +
+                '<div class="w-full max-w-lg flex-1 flex flex-col mt-6">' + contentHtml +
+                '</div></div></div>';
+        }
+
+        function handleOfficialUpload(event) {
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onloadend = function() {
+                    App.officialGabarito = {
+                        dataUrl: reader.result,
+                        mimeType: file.type,
+                        base64: reader.result.split(',')[1]
+                    };
+                    render();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleStudentUpload(event) {
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onloadend = function() {
+                    App.studentScan = reader.result;
+                    render();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleCorrectionAndSync() {
+            if (!App.studentScan || App.isProcessing) return;
+
+            App.isProcessing = true;
+            render();
+
+            setTimeout(function() {
+                var qCount = App.testDetails.qCount || 20;
+                var correct = Math.floor(Math.random() * (qCount - 5)) + 5;
+                var grade = parseFloat(((correct / qCount) * 10).toFixed(1));
+
+                var clsId = App.selectedClass.id;
+                var studentId = App.currentStudentId;
+
+                for (var ci = 0; ci < App.classes.length; ci++) {
+                    if (App.classes[ci].id === clsId) {
+                        for (var si = 0; si < App.classes[ci].students.length; si++) {
+                            if (App.classes[ci].students[si].id === studentId) {
+                                var student = App.classes[ci].students[si];
+                                var newTest = {
+                                    id: 'sync-' + Date.now(),
+                                    title: App.testDetails.name,
+                                    grade: grade,
+                                    date: 'Hoje',
+                                    correct: correct,
+                                    wrong: qCount - correct,
+                                    details: getRandomDetails(qCount)
+                                };
+                                student.history = student.history || [];
+                                student.history.push(newTest);
+                                updateStudentStats(student);
+
+                                // Recalcular média da turma
+                                var totalGpa = 0;
+                                for (var sj = 0; sj < App.classes[ci].students.length; sj++) {
+                                    totalGpa += App.classes[ci].students[sj].gpa || 0;
+                                }
+                                App.classes[ci].average = App.classes[ci].students.length > 0 ?
+                                    parseFloat((totalGpa / App.classes[ci].students.length).toFixed(1)) : 0;
+                                App.classes[ci].statistics = calcularEstatisticasTurma(App.classes[ci].students,
+                                    App.classes[ci].totalAulas || 0);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                App.isProcessing = false;
+                App.studentScan = null;
+                App.mensagemToast = 'Correção realizada! Nota: ' + grade + '/10';
+                App.showSyncSuccess = true;
+                App.scanStep = 1;
+                render();
+                setTimeout(function() {
+                    App.showSyncSuccess = false;
+                    navigateTo('sala-detalhe');
+                }, 2000);
+            }, 1500);
+        }
+
+        // ============================================================
+        // INICIAR
+        // ============================================================
+        render();
+    </script>
+</body>
+</html>
